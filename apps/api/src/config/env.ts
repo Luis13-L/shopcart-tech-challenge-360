@@ -23,6 +23,12 @@ const envSchema = z.object({
     .url()
     .default("http://localhost:5173"),
 
+  JWT_SECRET: z.string()
+  .regex(
+    /^[A-Za-z0-9_-]{43}$/,
+    "JWT_SECRET debe contener 32 bytes codificados en base64url"
+  ),
+
   // =====================================
   // CONFIGURACION SQL SERVER
   // =====================================

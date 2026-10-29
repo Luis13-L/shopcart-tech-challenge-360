@@ -1,4 +1,3 @@
-
 import express, {
   type ErrorRequestHandler
 } from "express";
@@ -8,6 +7,7 @@ import helmet from "helmet";
 import { env } from "./config/env.js";
 import { systemRouter } from "./modules/system/system.routes.js";
 import { catalogRouter} from "./modules/catalog/catalog.routes.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 
 export function createApp() {
   const app = express();
@@ -38,6 +38,8 @@ export function createApp() {
   });
   // Registrar rutas de SqlServer
   app.use("/api/health", systemRouter);
+
+  app.use("/api/auth", authRouter);
 
   // Catalogo publico
 app.use("/api/catalog/products", catalogRouter);
