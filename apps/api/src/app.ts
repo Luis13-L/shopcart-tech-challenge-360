@@ -7,6 +7,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { env } from "./config/env.js";
 import { systemRouter } from "./modules/system/system.routes.js";
+import { catalogRouter} from "./modules/catalog/catalog.routes.js";
 
 export function createApp() {
   const app = express();
@@ -37,6 +38,9 @@ export function createApp() {
   });
   // Registrar rutas de SqlServer
   app.use("/api/health", systemRouter);
+
+  // Catalogo publico
+app.use("/api/catalog/products", catalogRouter);
   // Rutas no encontradas
   app.use((_req, res) => {
     res.status(404).json({
