@@ -1,0 +1,25 @@
+# Dependencias
+node_modules/
+
+# Variables y secretos
+.env
+.env.*
+!.env.example
+
+# Compilaciones
+dist/
+build/
+*.tsbuildinfo
+
+# SQL Server
+*.bak
+*.mdf
+*.ldf
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Logs
+*.log
