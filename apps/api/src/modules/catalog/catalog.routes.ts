@@ -14,24 +14,23 @@ import {
 } from "./catalog.update.controller.js";
 
 import {
+  deactivateProductController
+} from "./catalog.deactivate.controller.js";
+
+import {
   requireAuth,
   requireRole
 } from "../auth/auth.middleware.js";
 
 export const catalogRouter = Router();
 
-// ========================================
-// GET - Listado publico de productos
-// ========================================
+// GET - Listar productos
 catalogRouter.get(
   "/",
   getCatalogProducts
 );
 
-// ========================================
 // POST - Crear producto
-// Solo Administrador
-// ========================================
 catalogRouter.post(
   "/",
   requireAuth,
@@ -39,13 +38,18 @@ catalogRouter.post(
   createProductController
 );
 
-// ========================================
 // PATCH - Actualizar producto
-// Solo Administrador
-// ========================================
 catalogRouter.patch(
   "/:id",
   requireAuth,
   requireRole("Administrador"),
   updateProductController
+);
+
+// PATCH - Desactivar producto
+catalogRouter.patch(
+  "/:id/status",
+  requireAuth,
+  requireRole("Administrador"),
+  deactivateProductController
 );
