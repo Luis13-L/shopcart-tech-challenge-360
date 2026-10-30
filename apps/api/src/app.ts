@@ -8,6 +8,7 @@ import { env } from "./config/env.js";
 import { systemRouter } from "./modules/system/system.routes.js";
 import { catalogRouter} from "./modules/catalog/catalog.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
+import { cartRouter } from "./modules/cart/cart.routes.js";
 
 export function createApp() {
   const app = express();
@@ -40,6 +41,10 @@ export function createApp() {
   app.use("/api/health", systemRouter);
 
   app.use("/api/auth", authRouter);
+
+  // Carrito de compras
+  app.use("/api/cart", cartRouter);
+
 
   // Catalogo publico
 app.use("/api/catalog/products", catalogRouter);
