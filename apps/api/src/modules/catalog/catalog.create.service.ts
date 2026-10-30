@@ -1,7 +1,7 @@
 
 import type {
   CreateProductInput
-} from "./catalog.create.schema.js";
+} from "./catalog.create.schema.ts";
 
 import {
   insertCatalogProduct
