@@ -9,6 +9,7 @@ import { systemRouter } from "./modules/system/system.routes.js";
 import { catalogRouter} from "./modules/catalog/catalog.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { cartRouter } from "./modules/cart/cart.routes.js";
+import { checkoutRouter } from "./modules/checkout/checkout.routes.js";
 
 export function createApp() {
   const app = express();
@@ -48,6 +49,9 @@ export function createApp() {
 
   // Catalogo publico
 app.use("/api/catalog/products", catalogRouter);
+
+  // Checkout
+  app.use("/api/checkout", checkoutRouter);
   // Rutas no encontradas
   app.use((_req, res) => {
     res.status(404).json({
