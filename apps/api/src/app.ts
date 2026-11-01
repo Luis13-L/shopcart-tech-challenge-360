@@ -10,6 +10,8 @@ import { catalogRouter} from "./modules/catalog/catalog.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { cartRouter } from "./modules/cart/cart.routes.js";
 import { checkoutRouter } from "./modules/checkout/checkout.routes.js";
+import { ordersRouter } from "./modules/orders/orders.routes.js";
+import { couponsRouter } from "./modules/coupons/coupons.routes.js";
 
 export function createApp() {
   const app = express();
@@ -52,6 +54,13 @@ app.use("/api/catalog/products", catalogRouter);
 
   // Checkout
   app.use("/api/checkout", checkoutRouter);
+ 
+  // Ordenes
+  app.use("/api/orders", ordersRouter);
+
+  // Cupones
+  app.use("/api/coupons", couponsRouter);
+
   // Rutas no encontradas
   app.use((_req, res) => {
     res.status(404).json({
