@@ -353,6 +353,10 @@ GO
 -- 3. AUDITAR ACTIVACION / DESACTIVACION
 -- ==========================================
 
+
+USE ShopCartDB;
+GO
+
 CREATE OR ALTER PROCEDURE dbo.SP_Cupones_CambiarEstado
     @IDUsuario INT,
     @IDCupon INT,
@@ -362,25 +366,33 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
+    -- Validar Administrador activo
     IF NOT EXISTS (
         SELECT 1
         FROM dbo.Usuarios u
-        INNER JOIN dbo.Roles r ON r.IDRol = u.IDRol
+        INNER JOIN dbo.Roles r
+            ON r.IDRol = u.IDRol
         WHERE u.IDUsuario = @IDUsuario
           AND u.Activo = 1
           AND r.Nombre = 'Administrador'
     )
-        THROW 71001, 'Administrador no autorizado.', 1;
+        THROW 71001,
+            'Administrador no autorizado.', 1;
 
     IF @IDCupon IS NULL OR @IDCupon <= 0
-        THROW 71015, 'IDCupon invalido.', 1;
+        THROW 71015,
+            'IDCupon invalido.', 1;
 
     IF @Activo IS NULL
-        THROW 71016, 'Estado invalido.', 1;
+        THROW 71016,
+            'Estado invalido.', 1;
 
     DECLARE @ActivoAnterior BIT;
     DECLARE @Antes NVARCHAR(MAX);
     DECLARE @Despues NVARCHAR(MAX);
+
+    -- Variable que corrige el error CASE
+    DECLARE @AccionAuditoria VARCHAR(30);
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -390,34 +402,46 @@ BEGIN
         WHERE IDCupon = @IDCupon;
 
         IF @ActivoAnterior IS NULL
-            THROW 71014, 'Cupon no encontrado.', 1;
+            THROW 71014,
+                'Cupon no encontrado.', 1;
 
-        UPDATE dbo.Cupones
-        SET Activo = @Activo
-        WHERE IDCupon = @IDCupon;
-
+        -- Solo actualizar si realmente cambio
         IF @ActivoAnterior <> @Activo
         BEGIN
+            UPDATE dbo.Cupones
+            SET Activo = @Activo
+            WHERE IDCupon = @IDCupon;
+
+            -- Valores anteriores
             SET @Antes = (
-                SELECT @ActivoAnterior AS activo
+                SELECT
+                    @ActivoAnterior AS activo
                 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
             );
 
+            -- Valores nuevos
             SET @Despues = (
-                SELECT @Activo AS activo
+                SELECT
+                    @Activo AS activo
                 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
             );
 
+            -- Determinar accion antes de EXEC
+            SET @AccionAuditoria =
+                CASE
+                    WHEN @Activo = 1
+                        THEN 'ACTIVAR'
+                    ELSE 'DESACTIVAR'
+                END;
+
+            -- Registrar auditoria en la
+            -- misma transaccion del cambio
             EXEC dbo.SP_Auditoria_RegistrarCambio
                 @IDUsuario = @IDUsuario,
                 @Modulo = 'CUPONES',
                 @Entidad = 'Cupones',
                 @IDEntidad = @IDCupon,
-                @Accion = CASE
-                    WHEN @Activo = 1
-                        THEN 'ACTIVAR'
-                    ELSE 'DESACTIVAR'
-                END,
+                @Accion = @AccionAuditoria,
                 @ValoresAnteriores = @Antes,
                 @ValoresNuevos = @Despues;
         END;
@@ -425,8 +449,11 @@ BEGIN
         COMMIT TRANSACTION;
 
         SELECT
-            IDCupon, Codigo, Activo,
-            UsosRealizados, LimiteUsos
+            IDCupon,
+            Codigo,
+            Activo,
+            UsosRealizados,
+            LimiteUsos
         FROM dbo.Cupones
         WHERE IDCupon = @IDCupon;
 
@@ -434,6 +461,7 @@ BEGIN
     BEGIN CATCH
         IF XACT_STATE() <> 0
             ROLLBACK TRANSACTION;
+
         THROW;
     END CATCH;
 END;
