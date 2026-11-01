@@ -12,6 +12,8 @@ import { cartRouter } from "./modules/cart/cart.routes.js";
 import { checkoutRouter } from "./modules/checkout/checkout.routes.js";
 import { ordersRouter } from "./modules/orders/orders.routes.js";
 import { couponsRouter } from "./modules/coupons/coupons.routes.js";
+import { reportsRouter } from "./modules/reports/reports.routes.js";
+import {  auditRouter } from "./modules/audit/audit.routes.js";
 
 export function createApp() {
   const app = express();
@@ -43,6 +45,7 @@ export function createApp() {
   // Registrar rutas de SqlServer
   app.use("/api/health", systemRouter);
 
+  // Autenticacion y autorizacion
   app.use("/api/auth", authRouter);
 
   // Carrito de compras
@@ -60,6 +63,12 @@ app.use("/api/catalog/products", catalogRouter);
 
   // Cupones
   app.use("/api/coupons", couponsRouter);
+
+  // Reportes
+  app.use("/api/reports", reportsRouter);
+
+  // Auditoria
+  app.use("/api/audit", auditRouter);
 
   // Rutas no encontradas
   app.use((_req, res) => {

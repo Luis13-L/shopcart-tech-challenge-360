@@ -17,6 +17,10 @@ import {
   returnOrderController
 } from "./orders.return.controller.js";
 
+import {
+  listOrdersReportController
+} from "../reports/reports.controller.js";
+
 export const ordersRouter = Router();
 
 // Operador o Administrador:
@@ -40,4 +44,12 @@ ordersRouter.post(
   "/:id/returns",
   requireAuth,
   returnOrderController
+);
+
+// Listado administrativo de pedidos.
+// SQL Server valida Administrador u Operador.
+ordersRouter.get(
+  "/",
+  requireAuth,
+  listOrdersReportController
 );
