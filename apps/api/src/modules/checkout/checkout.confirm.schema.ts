@@ -25,7 +25,18 @@ export const confirmCheckoutSchema = z.object({
     .regex(
       /^(0|[1-9]\d{0,16})\.\d{2}$/,
       "El total debe tener dos decimales"
-    )
+    ),
+
+  codigoCupon: z.string()
+  .trim()
+  .min(3, "El codigo debe tener al menos 3 caracteres")
+  .max(50, "El codigo no puede superar 50 caracteres")
+  .regex(
+    /^[A-Za-z0-9_-]+$/,
+    "El codigo solo admite letras, numeros, guiones y guion bajo"
+  )
+  .transform(value => value.toUpperCase())
+  .optional(), 
 }).strict();
 
 export type ConfirmCheckoutInput =

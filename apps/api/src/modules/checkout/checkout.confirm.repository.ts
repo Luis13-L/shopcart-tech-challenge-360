@@ -82,6 +82,11 @@ export async function confirmCheckout(
       sql.Decimal(19, 2),
       input.totalEsperado
     )
+    .input(
+        "CodigoCupon",
+        sql.VarChar(50),
+        input.codigoCupon ?? null
+    )
     .execute<CheckoutRow>(
       "dbo.SP_Pedidos_ConfirmarCheckout"
     );

@@ -114,7 +114,47 @@ const businessErrors: Record<
     status: 409,
     code: "CART_CONVERSION_FAILED",
     message: "No se pudo convertir el carrito"
-  }
+    }, 
+    66029: {
+    status: 400,
+    code: "INVALID_COUPON_CODE",
+    message: "Codigo de cupon invalido"
+    },
+    66030: {
+    status: 404,
+    code: "COUPON_NOT_FOUND",
+    message: "Cupon inexistente o inactivo"
+    },
+    66031: {
+    status: 409,
+    code: "COUPON_EXPIRED",
+    message: "Cupon fuera de vigencia"
+    },
+    66032: {
+    status: 409,
+    code: "COUPON_MINIMUM_NOT_MET",
+    message: "No se alcanza el monto minimo del cupon"
+    },
+    66033: {
+    status: 409,
+    code: "COUPON_EXHAUSTED",
+    message: "Cupon sin usos disponibles"
+    },
+    66034: {
+    status: 409,
+    code: "COUPON_CUSTOMER_LIMIT",
+    message: "El cliente alcanzo el limite de usos"
+    },
+    66035: {
+    status: 409,
+    code: "COUPON_NOT_APPLICABLE",
+    message: "El cupon no genera un descuento aplicable"
+    },
+    66036: {
+    status: 409,
+    code: "COUPON_TYPE_UNSUPPORTED",
+    message: "Tipo de descuento no soportado"
+    }
 };
 
 export async function confirmCheckoutController(
