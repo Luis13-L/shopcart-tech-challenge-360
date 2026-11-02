@@ -15,6 +15,7 @@ import { couponsRouter } from "./modules/coupons/coupons.routes.js";
 import { reportsRouter } from "./modules/reports/reports.routes.js";
 import {  auditRouter } from "./modules/audit/audit.routes.js";
 import {  variantPricesRouter } from "./modules/catalog/catalog.price.routes.js";
+import {  categoriesRouter } from "./modules/categories/categories.routes.js";
 
 export function createApp() {
   const app = express();
@@ -72,10 +73,10 @@ app.use("/api/catalog/products", catalogRouter);
   app.use("/api/audit", auditRouter);
 
   // Precios de variantes
-  app.use("/api/variant-prices", variantPricesRouter);
-
   app.use("/api/catalog/variants", variantPricesRouter);
 
+  // Categorias
+  app.use("/api/catalog/categories", categoriesRouter);
   // Rutas no encontradas
   app.use((_req, res) => {
     res.status(404).json({
