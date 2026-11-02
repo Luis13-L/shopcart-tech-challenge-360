@@ -28,7 +28,8 @@ export function createApp() {
 
   // Permitir solicitudes del frontend
   app.use(cors({
-    origin: env.CORS_ORIGIN
+  origin: env.CORS_ORIGIN,
+  credentials: true
   }));
 
   // Procesamiento de JSON

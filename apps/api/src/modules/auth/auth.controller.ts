@@ -1,42 +1,61 @@
-
 import type {
   Request,
   Response,
   NextFunction
 } from "express";
 
-import { loginSchema } from "./auth.schema.js";
-import { login } from "./auth.service.js";
+import {
+  loginSchema
+} from "./auth.schema.js";
+
+import {
+  login
+} from "./auth.service.js";
+
+import {
+  setRefreshCookie
+} from "./auth.refresh.controller.js";
 
 export async function loginController(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const validation = loginSchema.safeParse(req.body);
+  const validation = loginSchema.safeParse(
+    req.body
+  );
 
   if (!validation.success) {
     res.status(400).json({
-      status: 400,
       code: "VALIDATION_ERROR",
-      message: "Datos de inicio de sesión inválidos"
+      message: "Datos de inicio de sesion invalidos"
     });
     return;
   }
 
   try {
-    const result = await login(validation.data);
+    const result = await login(
+      validation.data
+    );
 
     if (!result) {
       res.status(401).json({
-        status: 401,
         code: "INVALID_CREDENTIALS",
-        message: "Correo o contraseña incorrectos"
+        message: "Correo o contrasena incorrectos"
       });
       return;
     }
 
-    res.status(200).json(result);
+    setRefreshCookie(
+      res,
+      result.refreshToken
+    );
+
+    const { refreshToken: _hidden, ...data } =
+      result;
+
+    res.status(200).json(data);
+
   } catch (error) {
     next(error);
   }

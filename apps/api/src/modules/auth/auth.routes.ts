@@ -1,10 +1,27 @@
-
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 
-import { loginController } from "./auth.controller.js";
-import { requireAuth, requireRole } from "./auth.middleware.js";
-import { env } from "../../config/env.js";
+import {
+  loginController
+} from "./auth.controller.js";
+
+import {
+  registerController
+} from "./auth.register.controller.js";
+
+import {
+  refreshController,
+  logoutController
+} from "./auth.refresh.controller.js";
+
+import {
+  requireAuth,
+  requireRole
+} from "./auth.middleware.js";
+
+import {
+  env
+} from "../../config/env.js";
 
 export const authRouter = Router();
 
@@ -15,20 +32,63 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   statusCode: 429,
   message: {
-    status: 429,
     code: "TOO_MANY_REQUESTS",
-    message: "Demasiados intentos. Intenta más tarde."
+    message: "Demasiados intentos"
   }
 });
 
-// 1. LOGIN
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  statusCode: 429,
+  message: {
+    code: "TOO_MANY_REQUESTS",
+    message: "Demasiados registros"
+  }
+});
+
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  statusCode: 429,
+  message: {
+    code: "TOO_MANY_REQUESTS",
+    message: "Demasiadas renovaciones"
+  }
+});
+
+// Registro publico
+authRouter.post(
+  "/register",
+  registerLimiter,
+  registerController
+);
+
+// Login
 authRouter.post(
   "/login",
   loginLimiter,
   loginController
 );
 
-// 2. VERIFICAR USUARIO AUTENTICADO
+// Renovacion de sesion
+authRouter.post(
+  "/refresh",
+  refreshLimiter,
+  refreshController
+);
+
+// Cierre de sesion
+authRouter.post(
+  "/logout",
+  logoutController
+);
+
+// Usuario autenticado
 authRouter.get(
   "/me",
   requireAuth,
@@ -39,7 +99,7 @@ authRouter.get(
   }
 );
 
-// 3. VERIFICAR ROL ADMINISTRADOR
+// Verificacion administrativa en desarrollo
 if (env.NODE_ENV === "development") {
   authRouter.get(
     "/admin-check",

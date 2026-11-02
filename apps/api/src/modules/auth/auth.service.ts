@@ -1,20 +1,28 @@
-
 import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
 
-import { env } from "../../config/env.js";
-import { findUserByEmail } from "./auth.repository.js";
-import type { LoginInput } from "./auth.schema.js";
+import {
+  findUserByEmail
+} from "./auth.repository.js";
 
-const jwtKey = Buffer.from(
-  env.JWT_SECRET,
-  "base64url"
-);
+import type {
+  LoginInput
+} from "./auth.schema.js";
+
+import {
+  createAccessToken,
+  ACCESS_TOKEN_SECONDS
+} from "./auth.tokens.js";
+
+import {
+  createRefreshSession
+} from "./auth.refresh.service.js";
 
 export async function login(
   input: LoginInput
 ) {
-  const user = await findUserByEmail(input.correo);
+  const user = await findUserByEmail(
+    input.correo
+  );
 
   if (!user) {
     return null;
@@ -29,24 +37,21 @@ export async function login(
     return null;
   }
 
-  const accessToken = await new SignJWT({
-    role: user.NombreRol
-  })
-    .setProtectedHeader({
-      alg: "HS256",
-      typ: "JWT"
-    })
-    .setSubject(String(user.IDUsuario))
-    .setIssuer("shopcart-api")
-    .setAudience("shopcart-client")
-    .setIssuedAt()
-    .setExpirationTime("15m")
-    .sign(jwtKey);
+  const accessToken = await createAccessToken(
+    user.IDUsuario,
+    user.NombreRol
+  );
+
+  const refreshToken = await createRefreshSession(
+    user.IDUsuario
+  );
 
   return {
     accessToken,
-    tokenType: "Bearer",
-    expiresIn: 900,
+    refreshToken,
+    tokenType: "Bearer" as const,
+    expiresIn: ACCESS_TOKEN_SECONDS,
+
     user: {
       id: user.IDUsuario,
       correo: user.Correo,
