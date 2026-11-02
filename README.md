@@ -95,6 +95,91 @@ La automatización de pruebas de la API está pendiente.
 - Los importes históricos de pedidos se conservan.
 - Las operaciones sensibles generan auditoría.
 
+
+## Decisiones técnicas y justificación
+
+### Arquitectura por capas
+
+Elegimos Router, Controller, Service y Repository para
+separar responsabilidades. Esto facilita las pruebas,
+el mantenimiento y la identificación de errores.
+
+### Acceso mediante Stored Procedures
+
+Utilizamos procedimientos almacenados y parámetros
+tipados para cumplir el enunciado, centralizar las
+reglas de integridad y reducir riesgos de SQL injection.
+
+### Inventario y concurrencia
+
+Utilizamos transacciones y bloqueos UPDLOCK/HOLDLOCK
+en operaciones críticas para evitar sobreventas.
+Las existencias disponibles consideran las reservas
+activas y no vencidas.
+
+### Reservas de 15 minutos
+
+Elegimos reservar temporalmente las unidades durante
+el checkout, sin descontar definitivamente el inventario
+hasta confirmar el pedido. Las reservas vencidas dejan
+de contar como disponibilidad comprometida.
+
+### Idempotencia
+
+El checkout utiliza una clave única por solicitud y
+un hash de los datos relevantes. Un reintento idéntico
+devuelve el resultado anterior; una clave reutilizada
+con otros datos se rechaza.
+
+### Autenticación
+
+Utilizamos bcrypt para contraseñas, JWT de 15 minutos
+y refresh tokens con rotación y revocación.
+Los refresh tokens se almacenan como hashes SHA-256.
+
+### Precios históricos
+
+Cada detalle de pedido conserva el precio de venta.
+Así, una actualización posterior del catálogo no altera
+los importes de compras confirmadas.
+
+### Pagos simulados
+
+Elegimos simular la aprobación del pago para probar
+atomicidad, idempotencia y cambios de estado sin
+depender de una pasarela externa.
+
+Para integrar pagos reales necesitaríamos gestionar
+confirmaciones externas, webhooks autenticados y
+conciliación con el proveedor.
+
+## Ciclo de vida del pedido
+
+![Diagrama Ciclo de vida del pedido](docs/diagrams/ShopCart_Ciclo_pedido.png)
+
+
+## Modelo entidad-relación
+
+ShopCart utiliza una base de datos relacional en SQL Server,
+organizada en módulos funcionales.
+
+Los diagramas fueron generados a partir del esquema real
+de la base de datos.
+
+### Diagrama general
+
+![Modelo ER general](docs/diagrams/ShopCart_ER_General.png)
+
+### Diagramas por módulos
+
+- [Seguridad y usuarios](docs/diagrams/ShopCart_ER_Seguridad.png)
+- [Catálogo e inventario](docs/diagrams/ShopCart_ER_CatalogoInventario.png)
+- [Carrito y checkout](docs/diagrams/ShopCart_ER_CarritoCheckout.png)
+- [Pedidos y promociones](docs/diagrams/ShopCart_ER_PedidosPromociones.png)
+
+
+
+
 ## Estado del proyecto
 
 Fase 1: base de datos y backend en desarrollo avanzado.
