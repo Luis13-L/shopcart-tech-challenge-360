@@ -132,3 +132,9 @@ export const couponListQuerySchema = z.object({
 
 export type CouponInput =
   z.infer<typeof couponBodySchema>;
+
+  // Categoria null = cupón general.
+// Un ID positivo = cupón exclusivo de esa categoría.
+export const couponCategorySchema = z.object({
+  idCategoria: positiveInt.nullable()
+}).strict();

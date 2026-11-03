@@ -28,6 +28,7 @@ interface CouponRow {
   FechaFin: Date | string;
   Activo: boolean | number;
   FechaCreacion?: Date | string;
+  IDCategoriaAplicable?: number | null;
 }
 
 interface CouponStatusRow {
@@ -103,6 +104,7 @@ function mapCoupon(row: CouponRow) {
     fechaInicio: dateString(row.FechaInicio),
     fechaFin: dateString(row.FechaFin),
     activo: Boolean(row.Activo),
+    idCategoriaAplicable: row.IDCategoriaAplicable ?? null,
     ...(row.FechaCreacion
       ? {
           fechaCreacion: dateString(
@@ -336,3 +338,29 @@ export async function listCouponUses(
     fechaUso: dateString(row.FechaUso)
   }));
 }
+
+
+export async function assignCouponCategory(
+  userId: number,
+  couponId: number,
+  categoryId: number | null
+) {
+  const pool = await getDbPool();
+
+  const result = await pool.request()
+    .input("IDUsuario", sql.Int, userId)
+    .input("IDCupon", sql.Int, couponId)
+    .input(
+      "IDCategoria",
+      sql.Int,
+      categoryId
+    )
+    .execute<CouponRow>(
+      "dbo.SP_Cupones_AsignarCategoria"
+    );
+
+  return mapCoupon(
+    firstRow(result.recordset)
+  );
+}
+

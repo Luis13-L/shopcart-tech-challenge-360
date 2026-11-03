@@ -8,7 +8,8 @@ import {
   getCoupon,
   updateCoupon,
   changeCouponStatus,
-  listCouponUses
+  listCouponUses,
+  assignCouponCategory
 } from "./coupons.repository.js";
 
 export const couponsService = {
@@ -49,6 +50,18 @@ export const couponsService = {
       input
     );
   },
+  // Asignar categoria a cupon
+  setCategory(
+  userId: number,
+  couponId: number,
+  categoryId: number | null
+) {
+  return assignCouponCategory(
+    userId,
+    couponId,
+    categoryId
+  );
+},
 
   // Activar o desactivar
   setActive(

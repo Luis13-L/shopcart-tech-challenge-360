@@ -11,7 +11,8 @@ import {
   getCouponController,
   updateCouponController,
   changeCouponStatusController,
-  listCouponUsesController
+  listCouponUsesController,
+  assignCouponCategoryController
 } from "./coupons.controller.js";
 
 export const couponsRouter = Router();
@@ -57,4 +58,10 @@ couponsRouter.put(
 couponsRouter.patch(
   "/:id/status",
   changeCouponStatusController
+);
+
+// Asignar o quitar la categoria de un cupon.
+couponsRouter.patch(
+  "/:id/category",
+  assignCouponCategoryController
 );
