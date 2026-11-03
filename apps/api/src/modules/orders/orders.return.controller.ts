@@ -76,11 +76,6 @@ const businessErrors: Record<
     code: "ORDER_NOT_RETURNABLE",
     message: "El pedido no admite devoluciones"
   },
-  69021: {
-    status: 409,
-    code: "DISCOUNTED_RETURN_UNSUPPORTED",
-    message: "Devolucion con descuento aun no disponible"
-  },
   69022: {
     status: 409,
     code: "PAYMENT_NOT_RETURNABLE",
@@ -125,7 +120,18 @@ const businessErrors: Record<
     status: 409,
     code: "REFUND_UPDATE_FAILED",
     message: "No se pudo registrar el reembolso simulado"
-  }
+  },
+  69031: {
+  status: 409,
+  code: "ORDER_TOTAL_INCONSISTENT",
+  message: "Los importes historicos del pedido no son coherentes"
+},
+69032: {
+  status: 409,
+  code: "REFUND_LIMIT_EXCEEDED",
+  message: "El reembolso supera el importe pagado"
+}
+
 };
 
 export async function returnOrderController(
