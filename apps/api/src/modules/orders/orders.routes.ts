@@ -21,6 +21,15 @@ import {
   listOrdersReportController
 } from "../reports/reports.controller.js";
 
+import {
+  requireRole
+} from "../auth/auth.middleware.js";
+
+import {
+  listMyOrdersController,
+  getMyOrderController
+} from "./orders.customer.controller.js";
+
 export const ordersRouter = Router();
 
 // Operador o Administrador:
@@ -52,4 +61,19 @@ ordersRouter.get(
   "/",
   requireAuth,
   listOrdersReportController
+);
+
+// RF-07: historial del Cliente.
+ordersRouter.get(
+  "/my",
+  requireAuth,
+  requireRole("Cliente"),
+  listMyOrdersController
+);
+
+ordersRouter.get(
+  "/my/:id",
+  requireAuth,
+  requireRole("Cliente"),
+  getMyOrderController
 );

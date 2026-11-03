@@ -16,7 +16,8 @@ import { reportsRouter } from "./modules/reports/reports.routes.js";
 import {  auditRouter } from "./modules/audit/audit.routes.js";
 import {  variantPricesRouter } from "./modules/catalog/catalog.price.routes.js";
 import {  categoriesRouter } from "./modules/categories/categories.routes.js";
-
+import {  addressesRouter } from "./modules/addresses/addresses.routes.js";
+import {  inventoryRouter } from "./modules/inventory/inventory.routes.js";
 export function createApp() {
   const app = express();
 
@@ -78,6 +79,12 @@ app.use("/api/catalog/products", catalogRouter);
 
   // Categorias
   app.use("/api/catalog/categories", categoriesRouter);
+
+  // Direcciones
+  app.use("/api/addresses", addressesRouter);
+
+  // Inventario
+  app.use("/api/inventory", inventoryRouter);
   // Rutas no encontradas
   app.use((_req, res) => {
     res.status(404).json({
