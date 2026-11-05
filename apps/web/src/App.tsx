@@ -1,3 +1,13 @@
+import { Link } from "react-router";
+
+import {
+  useAuth
+} from "./auth/AuthProvider";
+
+import {
+  homeForRole
+} from "./lib/auth";
+
 import {
   useEffect,
   useMemo,
@@ -194,6 +204,8 @@ function ProductDialog({
 // ==========================================
 
 export default function App() {
+
+  const { session } = useAuth();
 
   // ========================================
   // ESTADOS DEL CATALOGO
@@ -424,16 +436,34 @@ export default function App() {
             </span>
           </a>
 
+          
           <nav
             className="header-nav"
             aria-label="Navegación principal"
           >
-            <a href="#inicio">Inicio</a>
-            <a href="#catalogo">Catálogo</a>
+            <Link to="/">Inicio</Link>
+
+            <a href="#catalogo">
+              Catálogo
+            </a>
+
             <a href="#beneficios">
               Por qué ShopCart
             </a>
+
+            <Link
+              to={
+                session
+                  ? homeForRole(session.user.rol)
+                  : "/login"
+              }
+            >
+              {session
+                ? "Mi espacio"
+                : "Iniciar sesión"}
+            </Link>
           </nav>
+
 
           <button
             className="header-cta"
