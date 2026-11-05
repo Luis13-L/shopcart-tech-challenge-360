@@ -1,3 +1,4 @@
+
 import {
   Navigate,
   Route,
@@ -11,6 +12,10 @@ import {
 } from "./pages/LoginPage";
 
 import {
+  RegisterPage
+} from "./pages/RegisterPage";
+
+import {
   WorkspacePage
 } from "./pages/WorkspacePage";
 
@@ -22,7 +27,9 @@ export default function AppRoutes() {
   return (
     <Routes>
 
-      {/* RUTAS PUBLICAS */}
+      {/* ==================================
+          RUTAS PUBLICAS
+      ================================== */}
 
       <Route
         path="/"
@@ -34,7 +41,14 @@ export default function AppRoutes() {
         element={<LoginPage />}
       />
 
-      {/* CLIENTE */}
+      <Route
+        path="/registro"
+        element={<RegisterPage />}
+      />
+
+      {/* ==================================
+          CLIENTE
+      ================================== */}
 
       <Route
         element={
@@ -47,7 +61,9 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* OPERADOR Y ADMINISTRADOR */}
+      {/* ==================================
+          OPERADOR
+      ================================== */}
 
       <Route
         element={
@@ -65,13 +81,13 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* SOLO ADMINISTRADOR */}
+      {/* ==================================
+          ADMINISTRADOR
+      ================================== */}
 
       <Route
         element={
-          <RequireRole
-            allowed={["Administrador"]}
-          />
+          <RequireRole allowed={["Administrador"]} />
         }
       >
         <Route
@@ -80,11 +96,15 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* RUTAS NO ENCONTRADAS */}
+      {/* ==================================
+          NO ENCONTRADA
+      ================================== */}
 
       <Route
         path="*"
-        element={<Navigate to="/" replace />}
+        element={
+          <Navigate to="/" replace />
+        }
       />
 
     </Routes>

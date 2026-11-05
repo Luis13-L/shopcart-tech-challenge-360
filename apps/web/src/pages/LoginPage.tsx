@@ -244,11 +244,12 @@ export function LoginPage() {
 
           </form>
 
-          <p className="auth-form-note">
-            ¿Todavía no tienes cuenta?
-            El registro de clientes se integrará
-            en el siguiente paso.
-          </p>
+            <p className="auth-form-note">
+            ¿Todavía no tienes cuenta?{" "}
+            <Link to="/registro">
+                Crear cuenta
+            </Link>
+            </p>
         </div>
       </section>
     </main>

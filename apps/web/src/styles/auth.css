@@ -697,3 +697,77 @@
     transition: none;
   }
 }
+
+
+/* ==========================================
+   REGISTRO DE CLIENTES
+========================================== */
+
+.register-password-hint {
+  margin: -4px 0 2px;
+
+  color: #9093a4;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.auth-form-note a {
+  margin-left: 4px;
+
+  color: #7162ed;
+
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.auth-form-note a:hover {
+  text-decoration: underline;
+}
+
+.register-success {
+  text-align: center;
+}
+
+.register-success-icon {
+  display: grid;
+  place-items: center;
+
+  width: 80px;
+  height: 80px;
+
+  margin: 0 auto 25px;
+
+  border-radius: 22px;
+
+  color: #348b68;
+  background: #e6f6ed;
+}
+
+.register-success h2 {
+  margin: 15px 0;
+}
+
+.register-success p {
+  color: #868a9a;
+
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.register-email {
+  display: block;
+
+  margin: 17px 0;
+
+  color: #272b41;
+  font-size: 14px;
+
+  overflow-wrap: anywhere;
+}
+
+.register-success .auth-submit {
+  margin-top: 28px;
+  text-decoration: none;
+}
+
