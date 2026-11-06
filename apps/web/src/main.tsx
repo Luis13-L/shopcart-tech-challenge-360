@@ -16,6 +16,7 @@ import AppRoutes from "./AppRoutes";
 import "./index.css";
 import "./styles/auth.css";
 import "./styles/cart.css";
+import "./styles/checkout.css";
 
 const rootElement =
   document.getElementById("root");

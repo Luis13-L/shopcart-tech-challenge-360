@@ -1,3 +1,4 @@
+
 import {
   Navigate,
   Route,
@@ -6,25 +7,21 @@ import {
 
 import App from "./App";
 
-import {
-  LoginPage
-} from "./pages/LoginPage";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { WorkspacePage } from "./pages/WorkspacePage";
+
+import { CartPage } from "./features/cart/CartPage";
 
 import {
-  RegisterPage
-} from "./pages/RegisterPage";
+  CheckoutPage
+} from "./features/checkout/CheckoutPage";
 
 import {
-  WorkspacePage
-} from "./pages/WorkspacePage";
+  OrderSuccessPage
+} from "./features/checkout/OrderSuccessPage";
 
-import {
-  CartPage
-} from "./features/cart/CartPage";
-
-import {
-  RequireRole
-} from "./auth/RequireRole";
+import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
   return (
@@ -47,7 +44,7 @@ export default function AppRoutes() {
         element={<RegisterPage />}
       />
 
-      {/* CLIENTE */}
+      {/* RUTAS DE CLIENTE */}
 
       <Route
         element={
@@ -63,6 +60,16 @@ export default function AppRoutes() {
           path="/carrito"
           element={<CartPage />}
         />
+
+        <Route
+          path="/checkout"
+          element={<CheckoutPage />}
+        />
+
+        <Route
+          path="/pedido-confirmado"
+          element={<OrderSuccessPage />}
+        />
       </Route>
 
       {/* OPERADOR Y ADMINISTRADOR */}
@@ -70,10 +77,7 @@ export default function AppRoutes() {
       <Route
         element={
           <RequireRole
-            allowed={[
-              "Operador",
-              "Administrador"
-            ]}
+            allowed={["Operador", "Administrador"]}
           />
         }
       >
@@ -96,7 +100,7 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* NO ENCONTRADA */}
+      {/* RUTA DESCONOCIDA */}
 
       <Route
         path="*"

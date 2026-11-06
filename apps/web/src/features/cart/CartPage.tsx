@@ -375,15 +375,15 @@ export function CartPage() {
                 durante el checkout.
               </p>
 
-              <button
-                type="button"
+              
+                <Link
+                to="/checkout"
                 className="cart-checkout-button"
-                disabled
-                title="Disponible al integrar el checkout"
-              >
+                >
                 Continuar al checkout
                 <ArrowRight size={19} />
-              </button>
+                </Link>
+
 
               <p className="cart-next-note">
                 Integraremos direcciones, cupones,
