@@ -1,4 +1,3 @@
-
 import {
   Navigate,
   Route,
@@ -20,6 +19,10 @@ import {
 } from "./pages/WorkspacePage";
 
 import {
+  CartPage
+} from "./features/cart/CartPage";
+
+import {
   RequireRole
 } from "./auth/RequireRole";
 
@@ -27,9 +30,7 @@ export default function AppRoutes() {
   return (
     <Routes>
 
-      {/* ==================================
-          RUTAS PUBLICAS
-      ================================== */}
+      {/* RUTAS PUBLICAS */}
 
       <Route
         path="/"
@@ -46,9 +47,7 @@ export default function AppRoutes() {
         element={<RegisterPage />}
       />
 
-      {/* ==================================
-          CLIENTE
-      ================================== */}
+      {/* CLIENTE */}
 
       <Route
         element={
@@ -59,11 +58,14 @@ export default function AppRoutes() {
           path="/mi-cuenta"
           element={<WorkspacePage />}
         />
+
+        <Route
+          path="/carrito"
+          element={<CartPage />}
+        />
       </Route>
 
-      {/* ==================================
-          OPERADOR
-      ================================== */}
+      {/* OPERADOR Y ADMINISTRADOR */}
 
       <Route
         element={
@@ -81,9 +83,7 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* ==================================
-          ADMINISTRADOR
-      ================================== */}
+      {/* ADMINISTRADOR */}
 
       <Route
         element={
@@ -96,15 +96,11 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* ==================================
-          NO ENCONTRADA
-      ================================== */}
+      {/* NO ENCONTRADA */}
 
       <Route
         path="*"
-        element={
-          <Navigate to="/" replace />
-        }
+        element={<Navigate to="/" replace />}
       />
 
     </Routes>

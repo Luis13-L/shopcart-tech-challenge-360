@@ -1,37 +1,38 @@
 import { useState } from "react";
-import { ArrowUpRight, Box } from "lucide-react";
+
+import {
+  ArrowUpRight,
+  Box,
+  ShoppingBag
+} from "lucide-react";
 
 import {
   formatGTQ,
   type Product
 } from "../lib/catalog";
 
-// ==========================================
-// CONTRATO DEL COMPONENTE
-// ==========================================
-
 interface ProductCardProps {
   product: Product;
   onPreview: (product: Product) => void;
+  onAdd: (product: Product) => void;
+  adding: boolean;
 }
-
-// ==========================================
-// TARJETA DE PRODUCTO
-// ==========================================
 
 export function ProductCard({
   product,
-  onPreview
+  onPreview,
+  onAdd,
+  adding
 }: ProductCardProps) {
 
   const [imageFailed, setImageFailed] =
     useState(false);
 
-  // Convencion temporal para imagenes.
-  // Posteriormente utilizaremos URLImagen
-  // proveniente de SQL Server.
   const imageUrl =
     `/images/products/${encodeURIComponent(product.sku)}.webp`;
+
+  const soldOut =
+    product.cantidadFisica <= 0;
 
   return (
     <article className="product-card">
@@ -43,6 +44,7 @@ export function ProductCard({
         </span>
 
         {imageFailed ? (
+
           <div
             className="product-fallback"
             aria-label="Imagen no disponible"
@@ -55,13 +57,16 @@ export function ProductCard({
               aria-hidden="true"
             />
           </div>
+
         ) : (
+
           <img
             src={imageUrl}
             alt={product.nombreProducto}
             loading="lazy"
             onError={() => setImageFailed(true)}
           />
+
         )}
 
       </div>
@@ -82,7 +87,9 @@ export function ProductCard({
             </strong>
 
             <span className="product-stock">
-              Existencia física: {product.cantidadFisica}
+              {soldOut
+                ? "Sin existencia física"
+                : `Existencia física: ${product.cantidadFisica}`}
             </span>
           </div>
 
@@ -98,6 +105,21 @@ export function ProductCard({
           </button>
 
         </div>
+
+        <button
+          type="button"
+          className="product-add-button"
+          disabled={adding || soldOut}
+          onClick={() => onAdd(product)}
+        >
+          <ShoppingBag size={17} />
+
+          {soldOut
+            ? "Agotado"
+            : adding
+              ? "Actualizando..."
+              : "Añadir al carrito"}
+        </button>
 
       </div>
 

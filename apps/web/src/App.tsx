@@ -1,4 +1,11 @@
-import { Link } from "react-router";
+import {
+  Link,
+  useNavigate
+} from "react-router";
+
+import {
+  useCart
+} from "./features/cart/CartProvider";
 
 import {
   useAuth
@@ -29,7 +36,8 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
-  X
+  X,
+  ShoppingBag
 } from "lucide-react";
 
 import { ProductCard } from "./components/ProductCard";
@@ -88,11 +96,15 @@ function scrollToCatalog(): void {
 interface ProductDialogProps {
   product: Product;
   onClose: () => void;
+  onAdd: (product: Product) => void;
+  adding: boolean;
 }
 
 function ProductDialog({
   product,
-  onClose
+  onClose,
+  onAdd,
+  adding
 }: ProductDialogProps) {
 
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -177,20 +189,22 @@ function ProductDialog({
             al reservar inventario.
           </p>
 
-          <p className="dialog-hint">
-            La compra desde esta pantalla
-            se habilitará cuando integremos
-            autenticación y carrito.
-          </p>
+          
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={
+                adding || product.cantidadFisica <= 0
+              }
+              onClick={() => onAdd(product)}
+            >
+              <ShoppingBag size={18} />
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={onClose}
-          >
-            Seguir explorando
-            <ArrowRight size={17} />
-          </button>
+              {product.cantidadFisica <= 0
+                ? "Agotado"
+                : "Añadir al carrito"}
+            </button>
+
 
         </div>
 
@@ -206,6 +220,46 @@ function ProductDialog({
 export default function App() {
 
   const { session } = useAuth();
+
+  
+const navigate = useNavigate();
+
+const {
+  itemCount,
+  busy: cartBusy,
+  loading: cartLoading,
+  feedback: cartFeedback,
+  addOne
+} = useCart();
+
+const [cartActionError, setCartActionError] =
+  useState<string | null>(null);
+
+// ==========================================
+// AGREGAR PRODUCTO DESDE EL CATALOGO
+// ==========================================
+
+function handleAddProduct(product: Product): void {
+
+  if (!session) {
+    // El backend actualmente requiere
+    // un Cliente autenticado.
+    navigate("/login");
+    return;
+  }
+
+  if (session.user.rol !== "Cliente") {
+    setCartActionError(
+      "Debes utilizar una cuenta de Cliente para comprar."
+    );
+    return;
+  }
+
+  setCartActionError(null);
+
+  void addOne(product.idVariante);
+}
+
 
   // ========================================
   // ESTADOS DEL CATALOGO
@@ -465,14 +519,34 @@ export default function App() {
           </nav>
 
 
-          <button
-            className="header-cta"
-            type="button"
-            onClick={scrollToCatalog}
-          >
-            Explorar tienda
-            <ArrowRight size={16} />
-          </button>
+          
+          <div className="header-actions">
+
+            <Link
+              to="/carrito"
+              className="header-cart"
+              aria-label={`Ir al carrito, ${itemCount} unidades`}
+            >
+              <ShoppingBag size={20} />
+
+              {itemCount > 0 && (
+                <span className="header-cart-count">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+
+            <button
+              className="header-cta"
+              type="button"
+              onClick={scrollToCatalog}
+            >
+              Explorar tienda
+              <ArrowRight size={16} />
+            </button>
+
+          </div>
+
 
         </div>
       </header>
@@ -672,7 +746,33 @@ export default function App() {
             </span>
 
           </div>
+            {cartActionError && (
+              <div
+                className="cart-feedback error"
+                role="alert"
+              >
+                {cartActionError}
+              </div>
+            )}
 
+            {session?.user.rol === "Cliente" &&
+              cartFeedback && (
+                <div
+                  className={`cart-feedback ${cartFeedback.type}`}
+                  role="status"
+                >
+                  {cartFeedback.message}
+
+                  {cartFeedback.type === "success" && (
+                    <>
+                      {" "}
+                      <Link to="/carrito">
+                        Ver mi carrito
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
           <div className="catalog-layout">
 
             {/* PANEL DE FILTROS */}
@@ -988,6 +1088,11 @@ export default function App() {
                       key={product.idVariante}
                       product={product}
                       onPreview={setSelectedProduct}
+                      onAdd={handleAddProduct}
+                      adding={
+                        session?.user.rol === "Cliente" &&
+                        (cartBusy || cartLoading)
+                      }
                     />
 
                   ))}
@@ -1109,11 +1214,16 @@ export default function App() {
       {/* DETALLE DEL PRODUCTO */}
 
       {selectedProduct && (
-        <ProductDialog
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-        />
-      )}
+      <ProductDialog
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAdd={handleAddProduct}
+        adding={
+          session?.user.rol === "Cliente" &&
+          (cartBusy || cartLoading)
+        }
+      />
+    )}
 
     </div>
   );
