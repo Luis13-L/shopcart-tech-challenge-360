@@ -17,6 +17,7 @@ import "./index.css";
 import "./styles/auth.css";
 import "./styles/cart.css";
 import "./styles/checkout.css";
+import "./styles/orders.css";
 
 const rootElement =
   document.getElementById("root");

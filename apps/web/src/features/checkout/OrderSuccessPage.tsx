@@ -115,6 +115,13 @@ export function OrderSuccessPage() {
           <ArrowRight size={18} />
         </Link>
 
+        <Link
+            to="/mis-pedidos"
+            className="btn btn-outline"
+        >
+           Consultar mis pedidos
+        </Link>
+
       </section>
     </main>
   );

@@ -114,6 +114,15 @@ export function WorkspacePage() {
 
             <ShieldCheck size={21} />
           </div>
+          {user.rol === "Cliente" && (
+            <Link
+              to="/mis-pedidos"
+              className="btn btn-primary"
+            >
+              <LayoutDashboard size={18} />
+              Consultar mis pedidos
+            </Link>
+          )}
 
           <p className="workspace-notice">
             Este es el punto de entrada autenticado.

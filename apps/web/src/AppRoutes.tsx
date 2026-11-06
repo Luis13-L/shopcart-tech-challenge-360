@@ -21,6 +21,14 @@ import {
   OrderSuccessPage
 } from "./features/checkout/OrderSuccessPage";
 
+import {
+  OrdersPage
+} from "./features/orders/OrdersPage";
+
+import {
+  OrderDetailPage
+} from "./features/orders/OrderDetailPage";
+
 import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
@@ -29,10 +37,7 @@ export default function AppRoutes() {
 
       {/* RUTAS PUBLICAS */}
 
-      <Route
-        path="/"
-        element={<App />}
-      />
+      <Route path="/" element={<App />} />
 
       <Route
         path="/login"
@@ -44,7 +49,7 @@ export default function AppRoutes() {
         element={<RegisterPage />}
       />
 
-      {/* RUTAS DE CLIENTE */}
+      {/* CLIENTE */}
 
       <Route
         element={
@@ -70,6 +75,16 @@ export default function AppRoutes() {
           path="/pedido-confirmado"
           element={<OrderSuccessPage />}
         />
+
+        <Route
+          path="/mis-pedidos"
+          element={<OrdersPage />}
+        />
+
+        <Route
+          path="/mis-pedidos/:id"
+          element={<OrderDetailPage />}
+        />
       </Route>
 
       {/* OPERADOR Y ADMINISTRADOR */}
@@ -77,7 +92,10 @@ export default function AppRoutes() {
       <Route
         element={
           <RequireRole
-            allowed={["Operador", "Administrador"]}
+            allowed={[
+              "Operador",
+              "Administrador"
+            ]}
           />
         }
       >
@@ -91,7 +109,9 @@ export default function AppRoutes() {
 
       <Route
         element={
-          <RequireRole allowed={["Administrador"]} />
+          <RequireRole
+            allowed={["Administrador"]}
+          />
         }
       >
         <Route
@@ -100,7 +120,7 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* RUTA DESCONOCIDA */}
+      {/* DESCONOCIDA */}
 
       <Route
         path="*"
