@@ -1,0 +1,273 @@
+/* SHOPCART - OPERACIONES */
+
+.operator-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 90% 0%,
+      #ece8ff,
+      transparent 35%
+    ),
+    #f8f8fc;
+  color: #292d43;
+}
+
+.operator-container {
+  width: min(1200px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 40px 0 90px;
+}
+
+.operator-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 40px 0 32px;
+}
+
+.operator-heading h1 {
+  margin: 12px 0;
+  font-size: clamp(2.3rem, 5vw, 4rem);
+}
+
+.operator-heading p {
+  color: #85899b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.operator-heading > svg {
+  color: #7162ed;
+}
+
+.operator-filters {
+  display: grid;
+  grid-template-columns:
+    1.3fr 1fr 1fr 1fr auto;
+  align-items: end;
+  gap: 15px;
+  padding: 24px;
+  background: white;
+  border: 1px solid #eae8f2;
+  border-radius: 15px;
+}
+
+.operator-filters label {
+  display: grid;
+  gap: 9px;
+  color: #4c4e63;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.operator-filters input,
+.operator-filters select,
+.operator-order-action textarea {
+  min-width: 0;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e6e3ef;
+  border-radius: 9px;
+  background: white;
+  color: #34384c;
+  font: inherit;
+  font-size: 12px;
+}
+
+.operator-filters input:focus,
+.operator-filters select:focus,
+.operator-order-action textarea:focus {
+  outline: 2px solid #a39af2;
+  outline-offset: 1px;
+}
+
+.operator-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 9px;
+  background: #7162ed;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.operator-primary:hover:not(:disabled) {
+  background: #5647d9;
+}
+
+.operator-primary:disabled,
+.operator-refresh:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.operator-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 23px 0;
+  color: #898d9f;
+  font-size: 12px;
+}
+
+.operator-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border: 1px solid #e6e4ee;
+  border-radius: 9px;
+  background: white;
+  color: #5c6075;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.operator-order-list {
+  display: grid;
+  gap: 18px;
+}
+
+.operator-order-card {
+  padding: 27px;
+  border: 1px solid #ebe9f3;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 14px 36px #25234108;
+}
+
+.operator-order-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.operator-order-top h2 {
+  margin: 8px 0;
+  font-size: 22px;
+}
+
+.operator-order-top small {
+  color: #9295a4;
+  font-size: 11px;
+}
+
+.operator-order-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  padding: 22px 0;
+  margin: 22px 0;
+  border-top: 1px solid #f0eef5;
+  border-bottom: 1px solid #f0eef5;
+}
+
+.operator-order-numbers > div {
+  display: grid;
+  gap: 8px;
+}
+
+.operator-order-numbers small {
+  color: #8c90a0;
+  font-size: 11px;
+}
+
+.operator-order-numbers strong {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.operator-order-action {
+  display: grid;
+  gap: 12px;
+}
+
+.operator-order-action label {
+  color: #4b4f64;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.operator-order-action textarea {
+  resize: vertical;
+}
+
+.operator-order-action button {
+  justify-self: start;
+}
+
+.operator-final-state {
+  color: #85899c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.operator-empty {
+  min-height: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  padding: 35px;
+  text-align: center;
+  background: white;
+  border: 1px solid #ebe9f3;
+  border-radius: 15px;
+}
+
+.operator-empty h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.operator-empty p {
+  color: #8c90a1;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1000px) {
+  .operator-filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .operator-filters > button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 580px) {
+  .operator-heading {
+    align-items: flex-start;
+  }
+
+  .operator-filters {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .operator-filters > button {
+    grid-column: auto;
+  }
+
+  .operator-order-card {
+    padding: 19px;
+  }
+
+  .operator-order-numbers {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .operator-order-top {
+    flex-wrap: wrap;
+  }
+}

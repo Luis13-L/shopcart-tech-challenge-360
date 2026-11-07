@@ -28,6 +28,9 @@ import {
 import {
   OrderDetailPage
 } from "./features/orders/OrderDetailPage";
+import {
+  OperatorOrdersPage
+} from "./features/operations/OperatorOrdersPage";
 
 import { RequireRole } from "./auth/RequireRole";
 
@@ -102,6 +105,10 @@ export default function AppRoutes() {
         <Route
           path="/operacion"
           element={<WorkspacePage />}
+        />
+        <Route
+          path="/operacion/pedidos"
+          element={<OperatorOrdersPage />}
         />
       </Route>
 

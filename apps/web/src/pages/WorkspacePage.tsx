@@ -123,6 +123,20 @@ export function WorkspacePage() {
               Consultar mis pedidos
             </Link>
           )}
+          
+          {(
+            user.rol === "Operador" ||
+            user.rol === "Administrador"
+          ) && (
+            <Link
+              to="/operacion/pedidos"
+              className="btn btn-primary"
+            >
+              <LayoutDashboard size={18} />
+              Gestionar pedidos
+            </Link>
+          )}
+
 
           <p className="workspace-notice">
             Este es el punto de entrada autenticado.
