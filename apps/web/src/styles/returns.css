@@ -1,0 +1,130 @@
+/* ==========================================
+   SHOPCART - DEVOLUCIONES
+========================================== */
+
+.return-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.return-form label {
+  color: #43475c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.return-form select,
+.return-form input,
+.return-form textarea {
+  width: 100%;
+  min-width: 0;
+
+  padding: 12px 13px;
+
+  border: 1px solid #e5e3ef;
+  border-radius: 10px;
+
+  background: #fdfdff;
+  color: #2c3046;
+
+  font: inherit;
+  font-size: 12px;
+}
+
+.return-form select:focus,
+.return-form input:focus,
+.return-form textarea:focus {
+  outline: 2px solid #9d90f2;
+  outline-offset: 1px;
+}
+
+.return-form textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.return-form :disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.return-remaining {
+  color: #85899a;
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+
+.return-remaining strong {
+  color: #6b5ce3;
+}
+
+.return-help {
+  color: #9498a8;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 6px 0;
+}
+
+.return-submit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+
+  width: 100%;
+  min-height: 46px;
+
+  padding: 12px 15px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #7162ed;
+  color: white;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.return-submit:hover:not(:disabled) {
+  background: #5c49dd;
+}
+
+.return-submit:disabled {
+  background: #aaa3e8;
+  cursor: not-allowed;
+}
+
+.return-pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 15px;
+  margin-bottom: 20px;
+
+  border: 1px solid #dcd6fb;
+  border-radius: 11px;
+
+  background: #f3f0ff;
+  color: #6658b5;
+}
+
+.return-pending > svg {
+  flex-shrink: 0;
+}
+
+.return-pending strong {
+  display: block;
+  font-size: 12px;
+}
+
+.return-pending p {
+  color: #7a72a9;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 7px 0 0;
+}

@@ -29,6 +29,10 @@ import {
   type OrderDetail
 } from "./orders.api";
 
+import {
+  ReturnOrderPanel
+} from "./ReturnOrderPanel";
+
 export function OrderDetailPage() {
   const { id } = useParams();
 
@@ -522,6 +526,33 @@ export function OrderDetailPage() {
                 )}
               </section>
             )}
+
+            
+                {/* DEVOLUCIONES DESPUES DE LA ENTREGA */}
+
+                {(
+                order.estado === "ENTREGADO" ||
+                order.estado === "DEVUELTO_PARCIAL"
+                ) && order.productos.some(
+                item => item.cantidad > item.cantidadDevuelta
+                ) && (
+                <ReturnOrderPanel
+                    order={order}
+                    onCompleted={result => {
+
+                    setNotice(
+                        result.reutilizado
+                        ? `Devolución #${result.idDevolucion} recuperada. Reembolso simulado: ${formatGTQ(result.montoReembolso)}.`
+                        : `Devolución #${result.idDevolucion} procesada. Reembolso simulado: ${formatGTQ(result.montoReembolso)}.`
+                    );
+
+                    // Volvemos a consultar SQL Server:
+                    // estado, cantidades e historial.
+                    setRetry(value => value + 1);
+
+                    }}
+                />
+                )}
 
           </aside>
         </div>
