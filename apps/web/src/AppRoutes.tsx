@@ -28,9 +28,14 @@ import {
 import {
   OrderDetailPage
 } from "./features/orders/OrderDetailPage";
+
 import {
   OperatorOrdersPage
 } from "./features/operations/OperatorOrdersPage";
+
+import {
+  OperatorInventoryPage
+} from "./features/inventory/OperatorInventoryPage";
 
 import { RequireRole } from "./auth/RequireRole";
 
@@ -109,6 +114,10 @@ export default function AppRoutes() {
         <Route
           path="/operacion/pedidos"
           element={<OperatorOrdersPage />}
+        />
+        <Route
+          path="/operacion/inventario"
+          element={<OperatorInventoryPage />}
         />
       </Route>
 

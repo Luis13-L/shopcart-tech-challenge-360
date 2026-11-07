@@ -20,6 +20,7 @@ import "./styles/checkout.css";
 import "./styles/orders.css";
 import "./styles/returns.css";
 import "./styles/operations.css";
+import "./styles/inventory.css";
 
 const rootElement =
   document.getElementById("root");

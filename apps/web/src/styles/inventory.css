@@ -1,0 +1,188 @@
+/* SHOPCART - INVENTARIO Y KARDEX */
+
+.inventory-search {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.inventory-search label,
+.inventory-form label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #45495d;
+}
+
+.inventory-search input,
+.inventory-form input,
+.inventory-form select,
+.inventory-form textarea {
+  padding: 12px;
+  border: 1px solid #e3e0ed;
+  border-radius: 9px;
+  background: white;
+  color: #33364a;
+  font: inherit;
+  font-size: 12px;
+}
+
+.inventory-search input {
+  width: 170px;
+}
+
+.inventory-search input:focus,
+.inventory-form input:focus,
+.inventory-form select:focus,
+.inventory-form textarea:focus {
+  outline: 2px solid #a69af2;
+  outline-offset: 1px;
+}
+
+.inventory-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 22px 0;
+}
+
+.inventory-stat {
+  padding: 27px;
+  border: 1px solid #ebe9f3;
+  border-radius: 15px;
+  background: white;
+}
+
+.inventory-stat small {
+  display: block;
+  color: #85899b;
+  font-size: 12px;
+}
+
+.inventory-stat strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 36px;
+  font-weight: 800;
+  color: #7162ed;
+}
+
+.inventory-sku {
+  margin: 0 0 25px;
+  color: #777c8d;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.inventory-sku strong {
+  color: #303349;
+}
+
+.inventory-layout {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  align-items: start;
+  gap: 22px;
+}
+
+.inventory-layout h2 {
+  margin: 0 0 15px;
+}
+
+.inventory-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.inventory-form select,
+.inventory-form input,
+.inventory-form textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+.inventory-form textarea {
+  resize: vertical;
+}
+
+.inventory-form button {
+  margin-top: 10px;
+}
+
+.inventory-section-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.inventory-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 13px 10px;
+  text-align: left;
+  border-bottom: 1px solid #f0edf5;
+  vertical-align: top;
+}
+
+.inventory-table th {
+  color: #73788b;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.inventory-table td {
+  color: #3b3e52;
+}
+
+.inventory-table tbody tr:hover {
+  background: #faf9ff;
+}
+
+.inventory-table td strong {
+  color: #7162ed;
+}
+
+@media (max-width: 900px) {
+  .inventory-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .inventory-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .inventory-stat {
+    padding: 18px;
+  }
+
+  .inventory-search {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .inventory-search input,
+  .inventory-search button {
+    width: 100%;
+  }
+
+  .inventory-section-header {
+    flex-wrap: wrap;
+  }
+}
