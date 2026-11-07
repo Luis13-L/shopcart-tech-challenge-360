@@ -136,7 +136,6 @@ export function WorkspacePage() {
               Gestionar pedidos
             </Link>
           )}
-          
           {(
             user.rol === "Operador" ||
             user.rol === "Administrador"
@@ -149,7 +148,15 @@ export function WorkspacePage() {
               Inventario y Kardex
             </Link>
           )}
-
+          {user.rol === "Administrador" && (
+            <Link
+              to="/administracion/categorias"
+              className="btn btn-primary"
+            >
+              <LayoutDashboard size={18} />
+              Administrar categorías
+            </Link>
+          )}
           <p className="workspace-notice">
             Este es el punto de entrada autenticado.
             Las operaciones específicas se incorporarán

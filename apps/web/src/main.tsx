@@ -21,6 +21,7 @@ import "./styles/orders.css";
 import "./styles/returns.css";
 import "./styles/operations.css";
 import "./styles/inventory.css";
+import "./styles/admin-categories.css";
 
 const rootElement =
   document.getElementById("root");

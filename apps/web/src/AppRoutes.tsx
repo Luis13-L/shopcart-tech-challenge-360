@@ -37,6 +37,10 @@ import {
   OperatorInventoryPage
 } from "./features/inventory/OperatorInventoryPage";
 
+import {
+  AdminCategoriesPage
+} from "./features/admin/AdminCategoriesPage";
+
 import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
@@ -133,6 +137,10 @@ export default function AppRoutes() {
         <Route
           path="/administracion"
           element={<WorkspacePage />}
+        />
+        <Route
+          path="/administracion/categorias"
+          element={<AdminCategoriesPage />}
         />
       </Route>
 
