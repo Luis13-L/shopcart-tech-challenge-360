@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 
 import {
@@ -14,9 +13,16 @@ import {
   confirmCheckoutController
 } from "./checkout.confirm.controller.js";
 
+import {
+  quoteCheckoutController
+} from "./checkout.quote.controller.js";
+
 export const checkoutRouter = Router();
 
-// Iniciar reserva de 15 minutos
+// ==========================================
+// RESERVAR INVENTARIO
+// ==========================================
+
 checkoutRouter.post(
   "/reservations",
   requireAuth,
@@ -24,7 +30,22 @@ checkoutRouter.post(
   reserveInventoryController
 );
 
-// Confirmar compra
+// ==========================================
+// COTIZAR CUPON SIN CONSUMIRLO
+// PASO 75B.3
+// ==========================================
+
+checkoutRouter.post(
+  "/quote",
+  requireAuth,
+  requireRole("Cliente"),
+  quoteCheckoutController
+);
+
+// ==========================================
+// CONFIRMAR COMPRA
+// ==========================================
+
 checkoutRouter.post(
   "/confirm",
   requireAuth,

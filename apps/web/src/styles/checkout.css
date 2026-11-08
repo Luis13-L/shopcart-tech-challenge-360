@@ -518,3 +518,111 @@
     font-size: 11px;
   }
 }
+
+/* ==========================================
+   PASO 75B.4 - CUPONES EN CHECKOUT
+========================================== */
+
+.checkout-coupon-form {
+  display: grid;
+  gap: 10px;
+}
+
+.checkout-coupon-form label {
+  color: #3a4056;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.checkout-coupon-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.checkout-coupon-controls input {
+  min-width: 0;
+  flex: 1;
+  padding: 13px 14px;
+  border: 1px solid #e7e5ef;
+  border-radius: 9px;
+  background: #fdfdff;
+  color: #292c41;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.checkout-coupon-controls input:focus {
+  outline: 2px solid #a69af2;
+  outline-offset: 1px;
+}
+
+.checkout-coupon-controls button {
+  flex-shrink: 0;
+}
+
+.checkout-coupon-controls button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.checkout-coupon-remove {
+  margin-top: 12px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: #7162ed;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.checkout-coupon-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #cdebdc;
+  border-radius: 11px;
+  background: #e9f8f0;
+  color: #227a49;
+}
+
+.checkout-coupon-success > svg {
+  flex-shrink: 0;
+}
+
+.checkout-coupon-success strong {
+  font-size: 13px;
+}
+
+.checkout-coupon-success p {
+  margin: 7px 0;
+  font-size: 13px;
+}
+
+.checkout-coupon-success small {
+  font-size: 12px;
+}
+
+.checkout-coupon-note {
+  margin-top: 15px;
+  color: #818699;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.checkout-summary-row.checkout-discount span,
+.checkout-summary-row.checkout-discount strong {
+  color: #227a49;
+}
+
+@media (max-width: 550px) {
+  .checkout-coupon-controls {
+    flex-direction: column;
+  }
+
+  .checkout-coupon-controls button {
+    width: 100%;
+  }
+}

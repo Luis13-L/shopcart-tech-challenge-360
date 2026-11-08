@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   type FormEvent
 } from "react";
@@ -12,7 +13,8 @@ import {
   CreditCard,
   MapPin,
   Plus,
-  ShieldCheck
+  ShieldCheck,
+  TicketPercent
 } from "lucide-react";
 
 import {
@@ -32,7 +34,9 @@ import {
 
 import {
   reserveCheckout,
-  confirmCheckout
+  confirmCheckout,
+  quoteCheckout,
+  type CouponQuote
 } from "./checkout.api";
 
 const EMPTY_ADDRESS: CreateAddressInput = {
@@ -44,10 +48,84 @@ const EMPTY_ADDRESS: CreateAddressInput = {
   referencia: null
 };
 
-interface ReservationAttempt {
-  idReserva: string;
-  claveIdempotencia: string;
-}
+  // ==========================================
+  // COTIZACION APLICADA AL CARRITO
+  // ==========================================
+
+  interface QuoteSnapshot {
+    data: CouponQuote;
+    cartSignature: string;
+  }
+
+  // ==========================================
+  // INTENTO INMUTABLE DE CHECKOUT
+  // ==========================================
+
+  interface ReservationAttempt {
+    idReserva: string;
+    idCarrito: string;
+    claveIdempotencia: string;
+    idDireccion: number;
+    totalEsperado: string;
+    codigoCupon?: string;
+    couponQuote: CouponQuote | null;
+    cartSignature: string;
+  }
+
+  // ==========================================
+  // VALIDAR UN INTENTO RECUPERADO
+  // ==========================================
+
+  function isReservationAttempt(
+    value: unknown
+  ): value is ReservationAttempt {
+    if (
+      value === null ||
+      typeof value !== "object"
+    ) {
+      return false;
+    }
+
+    const item = value as Partial<ReservationAttempt>;
+
+    const quote = item.couponQuote;
+
+    const quoteValid =
+      quote === null ||
+      (
+        typeof quote === "object" &&
+        quote !== null &&
+        typeof quote.idCarrito === "string" &&
+        typeof quote.codigoCupon === "string" &&
+        typeof quote.subtotal === "string" &&
+        typeof quote.descuento === "string" &&
+        typeof quote.total === "string"
+      );
+
+    return (
+      typeof item.idReserva === "string" &&
+      typeof item.idCarrito === "string" &&
+      typeof item.claveIdempotencia === "string" &&
+      /^[a-zA-Z0-9_-]{16,100}$/.test(
+        item.claveIdempotencia
+      ) &&
+      Number.isSafeInteger(item.idDireccion) &&
+      (item.idDireccion ?? 0) > 0 &&
+      typeof item.totalEsperado === "string" &&
+      /^(0|[1-9]\d{0,16})\.\d{2}$/.test(
+        item.totalEsperado
+      ) &&
+      typeof item.cartSignature === "string" &&
+      (
+        item.codigoCupon === undefined ||
+        (
+          typeof item.codigoCupon === "string" &&
+          /^[A-Z0-9_-]{3,50}$/.test(item.codigoCupon)
+        )
+      ) &&
+      quoteValid
+    );
+  }
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error
@@ -98,6 +176,62 @@ export function CheckoutPage() {
 
   const [message, setMessage] =
     useState<string | null>(null);
+
+  // ==========================================
+  // ESTADO DEL CUPON
+  // ==========================================
+
+  const [couponCode, setCouponCode] =
+    useState("");
+
+  const [couponQuote, setCouponQuote] =
+    useState<QuoteSnapshot | null>(null);
+
+  const [quoting, setQuoting] =
+    useState(false);
+
+  // Evitar envios simultaneos.
+  const quoteLock = useRef(false);
+  const reserveLock = useRef(false);
+  const confirmLock = useRef(false);
+
+  // Identidad del contenido del carrito.
+  // Se utiliza para detectar cotizaciones
+  // realizadas sobre un carrito anterior.
+
+  const cartSignature = cart
+    ? JSON.stringify([
+        cart.idCarrito,
+        cart.subtotal,
+        ...cart.items
+          .map(item => (
+            [
+              item.idVariante,
+              item.cantidad,
+              item.precioUnitario,
+              item.importeLinea
+            ].join(":")
+          ))
+          .sort()
+      ])
+    : "";
+
+  // Solo aceptamos una cotizacion que
+  // corresponda al carrito y codigo actuales.
+
+  const activeQuote =
+    couponQuote !== null &&
+    couponQuote.cartSignature === cartSignature &&
+    couponQuote.data.codigoCupon ===
+      couponCode.trim().toUpperCase()
+      ? couponQuote.data
+      : null;
+
+  // Tras reservar, mostramos la cotizacion
+  // congelada del intento original.
+
+  const displayedQuote =
+    reservation?.couponQuote ?? activeQuote;
 
   // ========================================
   // 1. CONSULTAR DIRECCIONES DEL CLIENTE
@@ -208,13 +342,106 @@ export function CheckoutPage() {
   }
 
   // ========================================
-  // 4. RESERVAR INVENTARIO
+  // COTIZAR CUPON SIN CONSUMIRLO
   // ========================================
+
+  async function handleQuote(
+    event: FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    event.preventDefault();
+
+    if (
+      quoteLock.current ||
+      reserveLock.current ||
+      confirmLock.current ||
+      reservation !== null ||
+      !cart ||
+      cartLoading ||
+      cartBusy
+    ) {
+      return;
+    }
+
+    const code = couponCode.trim().toUpperCase();
+
+    if (!/^[A-Z0-9_-]{3,50}$/.test(code)) {
+      setError(
+        "El codigo debe tener entre 3 y 50 caracteres: " +
+        "letras, numeros, guion o guion bajo."
+      );
+      return;
+    }
+
+    quoteLock.current = true;
+    setQuoting(true);
+    setCouponQuote(null);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const data = await quoteCheckout({
+        idCarrito: cart.idCarrito,
+        codigoCupon: code
+      });
+
+      if (
+        data.idCarrito !== cart.idCarrito ||
+        data.codigoCupon !== code ||
+        data.subtotal !== cart.subtotal
+      ) {
+        throw new Error(
+          "La cotizacion ya no coincide con este carrito. " +
+          "Actualiza los productos y vuelve a intentar."
+        );
+      }
+
+      setCouponCode(code);
+      setCouponQuote({
+        data,
+        cartSignature
+      });
+      setMessage(
+        "Cupon aplicado a la cotizacion. " +
+        "El descuento se revalidara al confirmar."
+      );
+    } catch (cause) {
+      setCouponQuote(null);
+      setError(getErrorMessage(cause));
+    } finally {
+      quoteLock.current = false;
+      setQuoting(false);
+    }
+  }
+
+  // ========================================
+  // QUITAR CUPON ANTES DE RESERVAR
+  // ========================================
+
+  function handleRemoveCoupon(): void {
+    if (
+      reservation !== null ||
+      quoteLock.current ||
+      reserveLock.current ||
+      confirmLock.current
+    ) {
+      return;
+    }
+
+    setCouponCode("");
+    setCouponQuote(null);
+    setError(null);
+    setMessage(null);
+  }
+
+  // ==========================================
+  // RESERVAR INVENTARIO Y FIJAR EL INTENTO
+  // ==========================================
 
   async function handleReserve(): Promise<void> {
     if (
-      reserving ||
-      confirming ||
+      reserveLock.current ||
+      confirmLock.current ||
+      quoteLock.current ||
       !cart ||
       cart.items.length === 0 ||
       cartLoading ||
@@ -224,10 +451,21 @@ export function CheckoutPage() {
     }
 
     if (selectedAddressId === null) {
-      setError("Selecciona una dirección de entrega");
+      setError("Selecciona una dirección de entrega.");
       return;
     }
 
+    // Si se escribió un cupón, debe existir
+    // una cotización vigente para este carrito.
+    if (couponCode.trim() !== "" && !activeQuote) {
+      setError(
+        "Debes aplicar el cupón y obtener una " +
+        "cotización válida antes de reservar."
+      );
+      return;
+    }
+
+    reserveLock.current = true;
     setReserving(true);
     setError(null);
     setMessage(null);
@@ -237,8 +475,6 @@ export function CheckoutPage() {
         cart.idCarrito
       );
 
-      // La misma reserva siempre debe
-      // reutilizar la misma clave.
       const storageKey =
         `shopcart:checkout:${data.idReserva}`;
 
@@ -246,61 +482,130 @@ export function CheckoutPage() {
         storageKey
       );
 
-      const key =
-        stored && /^[a-zA-Z0-9_-]{16,100}$/.test(stored)
-          ? stored
-          : crypto.randomUUID();
+      let attempt: ReservationAttempt;
 
-      window.sessionStorage.setItem(
-        storageKey,
-        key
+      if (stored !== null) {
+        // Recuperamos el mismo intento,
+        // sin cambiar clave, dirección ni cupón.
+        let recovered: unknown;
+
+        try {
+          recovered = JSON.parse(stored);
+        } catch {
+          throw new Error(
+            "Existe un intento anterior que no puede " +
+            "recuperarse de forma segura. " +
+            "No se generará otra clave para esta reserva."
+          );
+        }
+
+        if (
+          !isReservationAttempt(recovered) ||
+          recovered.idReserva !== data.idReserva ||
+          recovered.idCarrito !== cart.idCarrito
+        ) {
+          throw new Error(
+            "El intento guardado no coincide con la reserva."
+          );
+        }
+
+        attempt = recovered;
+
+        setMessage(
+          "Se recuperó el intento original. " +
+          "Se conservaron su cupón, dirección y " +
+          "clave de idempotencia."
+        );
+
+      } else {
+        attempt = {
+          idReserva: data.idReserva,
+          idCarrito: cart.idCarrito,
+          claveIdempotencia: crypto.randomUUID(),
+          idDireccion: selectedAddressId,
+          totalEsperado: cart.subtotal,
+          codigoCupon:
+            activeQuote?.codigoCupon,
+          couponQuote: activeQuote,
+          cartSignature
+        };
+
+        // Guardar antes de permitir confirmar.
+        window.sessionStorage.setItem(
+          storageKey,
+          JSON.stringify(attempt)
+        );
+
+        setMessage(
+          "Inventario reservado. " +
+          "Los datos de este intento quedaron fijados."
+        );
+      }
+
+      setReservation(attempt);
+
+      setSelectedAddressId(
+        attempt.idDireccion
       );
 
-      setReservation({
-        idReserva: data.idReserva,
-        claveIdempotencia: key
-      });
+      setCouponCode(
+        attempt.codigoCupon ?? ""
+      );
 
-      setMessage(
-        "Inventario reservado. La reserva es válida durante 15 minutos desde su creación."
+      setCouponQuote(
+        attempt.couponQuote
+          ? {
+              data: attempt.couponQuote,
+              cartSignature: attempt.cartSignature
+            }
+          : null
       );
 
     } catch (cause) {
       setError(getErrorMessage(cause));
     } finally {
+      reserveLock.current = false;
       setReserving(false);
     }
   }
 
-  // ========================================
-  // 5. CONFIRMAR CHECKOUT
-  // ========================================
+  // ==========================================
+  // CONFIRMAR PEDIDO CON CUPON
+  // ==========================================
 
   async function handleConfirm(): Promise<void> {
     if (
       !reservation ||
-      selectedAddressId === null ||
-      !cart ||
-      confirming
+      confirmLock.current
     ) {
       return;
     }
 
+    confirmLock.current = true;
     setConfirming(true);
     setError(null);
     setMessage(null);
 
     try {
+      // Nunca recalculamos ni reemplazamos
+      // los parametros de un intento existente.
       const result = await confirmCheckout({
         idReserva: reservation.idReserva,
-        idDireccion: selectedAddressId,
+        idDireccion: reservation.idDireccion,
         claveIdempotencia:
           reservation.claveIdempotencia,
-        totalEsperado: cart.total
+        totalEsperado:
+          reservation.totalEsperado,
+        ...(reservation.codigoCupon
+          ? {
+              codigoCupon:
+                reservation.codigoCupon
+            }
+          : {})
       });
 
-      // El pedido se confirmó o se recuperó
-      // mediante la misma clave idempotente.
+      // Solo eliminamos el intento despues
+      // de recibir confirmacion del servidor.
       window.sessionStorage.removeItem(
         `shopcart:checkout:${reservation.idReserva}`
       );
@@ -312,15 +617,14 @@ export function CheckoutPage() {
         }
       });
 
-      // Recuperar el nuevo carrito activo.
       void refresh();
 
     } catch (cause) {
-      // Mantenemos la reserva y la clave.
-      // Un reintento debe enviar el mismo
-      // identificador de idempotencia.
+      // Conservamos exactamente el mismo
+      // intento para un reintento posterior.
       setError(getErrorMessage(cause));
     } finally {
+      confirmLock.current = false;
       setConfirming(false);
     }
   }
@@ -330,6 +634,7 @@ export function CheckoutPage() {
 
   const isBusy =
     savingAddress ||
+    quoting ||
     reserving ||
     confirming ||
     cartBusy;
@@ -405,12 +710,16 @@ export function CheckoutPage() {
             1. Dirección
           </span>
           <span>
+            <TicketPercent size={16} />
+            2. Cupón
+          </span>
+          <span>
             <Clock3 size={16} />
-            2. Reserva
+            3. Reserva
           </span>
           <span>
             <CreditCard size={16} />
-            3. Confirmación
+            4. Confirmación
           </span>
         </div>
 
@@ -633,13 +942,137 @@ export function CheckoutPage() {
               )}
             </section>
 
-            {/* RESERVA */}
+
+            {/* ======================================
+                CUPON PROMOCIONAL - PASO 75B.4
+            ====================================== */}
 
             <section className="checkout-card">
               <div className="checkout-section-header">
                 <div>
                   <span className="checkout-step-number">
                     02
+                  </span>
+
+                  <h2>Cupón promocional</h2>
+                </div>
+
+                <TicketPercent size={22} />
+              </div>
+
+              <p className="checkout-description">
+                ¿Tienes un código de descuento?
+                Introdúcelo para consultar el ahorro
+                antes de confirmar tu compra.
+              </p>
+
+              <form
+                className="checkout-coupon-form"
+                onSubmit={event => {
+                  void handleQuote(event);
+                }}
+              >
+                <label htmlFor="checkout-coupon-code">
+                  Código promocional
+                </label>
+
+                <div className="checkout-coupon-controls">
+                  <input
+                    id="checkout-coupon-code"
+                    type="text"
+                    placeholder="Ej. DESCUENTO10"
+                    maxLength={50}
+                    autoComplete="off"
+                    value={couponCode}
+                    disabled={reservation !== null || isBusy}
+                    onChange={event => {
+                      setCouponCode(
+                        event.target.value.toUpperCase()
+                      );
+                      setCouponQuote(null);
+                      setError(null);
+                      setMessage(null);
+                    }}
+                  />
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={
+                      reservation !== null ||
+                      isBusy ||
+                      couponCode.trim() === ""
+                    }
+                  >
+                    {quoting ? "Validando..." : "Aplicar"}
+                  </button>
+                </div>
+              </form>
+
+              {!reservation && couponCode.trim() !== "" && (
+                <button
+                  type="button"
+                  className="checkout-coupon-remove"
+                  disabled={isBusy}
+                  onClick={handleRemoveCoupon}
+                >
+                  Quitar código
+                </button>
+              )}
+
+              {displayedQuote && (
+                <div
+                  className="checkout-coupon-success"
+                  role="status"
+                >
+                  <CheckCircle2 size={20} />
+
+                  <div>
+                    <strong>
+                      Cupón {displayedQuote.codigoCupon}
+                    </strong>
+
+                    <p>
+                      Ahorro estimado:{" "}
+                      {formatGTQ(displayedQuote.descuento)}
+                    </p>
+
+                    <small>
+                      Total cotizado:{" "}
+                      {formatGTQ(displayedQuote.total)}
+                    </small>
+                  </div>
+                </div>
+              )}
+
+              {reservation && (
+                <p className="checkout-coupon-note">
+                  El código promocional está bloqueado
+                  para esta reserva. La confirmación
+                  volverá a validar su vigencia y
+                  disponibilidad.
+                </p>
+              )}
+
+              {!reservation &&
+                couponCode.trim() !== "" &&
+                !activeQuote &&
+                !quoting && (
+                  <p className="checkout-coupon-note">
+                    Debes aplicar y validar este código
+                    antes de reservar el inventario.
+                  </p>
+                )}
+            </section>
+
+
+            {/* RESERVA */}
+
+            <section className="checkout-card">
+              <div className="checkout-section-header">
+                <div>
+                  <span className="checkout-step-number">
+                    03
                   </span>
                   <h2>Reserva de inventario</h2>
                 </div>
@@ -673,7 +1106,11 @@ export function CheckoutPage() {
                   className="btn btn-primary"
                   disabled={
                     isBusy ||
-                    selectedAddressId === null
+                    selectedAddressId === null ||
+                    (
+                      couponCode.trim() !== "" &&
+                      !activeQuote
+                    )
                   }
                   onClick={() => {
                     void handleReserve();
@@ -694,7 +1131,7 @@ export function CheckoutPage() {
               <div className="checkout-section-header">
                 <div>
                   <span className="checkout-step-number">
-                    03
+                    04
                   </span>
                   <h2>Confirmación</h2>
                 </div>
@@ -767,20 +1204,35 @@ export function CheckoutPage() {
             <div className="checkout-summary-row">
               <span>Subtotal</span>
               <strong>
-                {formatGTQ(cart.subtotal)}
+                {formatGTQ(
+                  reservation?.totalEsperado ?? cart.subtotal
+                )}
               </strong>
             </div>
 
-            <div className="checkout-summary-row">
-              <span>Descuento del carrito</span>
-              <strong>
-                {formatGTQ(cart.descuento)}
-              </strong>
-            </div>
+            {displayedQuote && (
+              <div className="checkout-summary-row checkout-discount">
+                <span>
+                  Descuento ({displayedQuote.codigoCupon})
+                </span>
+                <strong>
+                  -{formatGTQ(displayedQuote.descuento)}
+                </strong>
+              </div>
+            )}
+
+            {!displayedQuote && (
+              <div className="checkout-summary-row">
+                <span>Descuento</span>
+                <strong>{formatGTQ(cart.descuento)}</strong>
+              </div>
+            )}
 
             <div className="checkout-summary-total">
-              <span>Total esperado</span>
-              <strong>{formatGTQ(cart.total)}</strong>
+              <span>Total estimado</span>
+              <strong>
+                {formatGTQ(displayedQuote?.total ?? cart.total)}
+              </strong>
             </div>
 
             <p className="checkout-summary-note">
@@ -790,8 +1242,9 @@ export function CheckoutPage() {
             </p>
 
             <p className="checkout-summary-note">
-              Los cupones promocionales se integrarán
-              con una cotización previa del servidor.
+              Los descuentos son calculados por SQL Server.
+              La cotización es informativa y puede cambiar
+              antes de confirmar el pedido.
             </p>
           </aside>
 
