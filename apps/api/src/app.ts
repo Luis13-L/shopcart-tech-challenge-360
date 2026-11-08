@@ -18,6 +18,8 @@ import {  variantPricesRouter } from "./modules/catalog/catalog.price.routes.js"
 import {  categoriesRouter } from "./modules/categories/categories.routes.js";
 import {  addressesRouter } from "./modules/addresses/addresses.routes.js";
 import {  inventoryRouter } from "./modules/inventory/inventory.routes.js";
+import {  productImagesDir } from "./modules/catalog/catalog.image.storage.js";
+
 export function createApp() {
   const app = express();
 
@@ -26,6 +28,23 @@ export function createApp() {
 
   // Cabeceras de seguridad
   app.use(helmet());
+
+  // Cabeceras para permitir la carga de imagenes
+  app.use(
+    "/api/images/products",
+    express.static(productImagesDir, {
+      dotfiles: "deny",
+      index: false,
+      maxAge: "7d",
+      immutable: true,
+      setHeaders: (res) => {
+        res.setHeader(
+          "X-Content-Type-Options",
+          "nosniff"
+        );
+      }
+    })
+  );
 
   // Permitir solicitudes del frontend
   app.use(cors({

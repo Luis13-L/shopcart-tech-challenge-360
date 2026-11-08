@@ -109,6 +109,15 @@ function ProductDialog({
 
   const closeRef = useRef<HTMLButtonElement>(null);
 
+  // Estado para detectar errores al cargar imágenes
+  const [imageFailed, setImageFailed] = useState(false);
+
+  // Restablecer error cuando cambia el producto
+  useEffect(() => {
+    setImageFailed(false);
+  }, [product.imagenUrl]);
+
+  // Manejo de enfoque y tecla Escape
   useEffect(() => {
     closeRef.current?.focus();
 
@@ -130,7 +139,6 @@ function ProductDialog({
       );
     };
   }, [onClose]);
-
   return (
     <div
       className="modal-backdrop"
@@ -157,13 +165,36 @@ function ProductDialog({
           <X size={20} />
         </button>
 
+        
+        
         <div className="dialog-visual">
-          <Package2
-            size={88}
-            strokeWidth={1}
-            aria-hidden="true"
-          />
+          {product.imagenUrl && !imageFailed ? (
+            <img
+              src={product.imagenUrl}
+              alt={
+                product.imagenAlt ||
+                product.nombreProducto
+              }
+              loading="lazy"
+              onError={() => {
+                setImageFailed(true);
+              }}
+              style={{
+                width: "100%",
+                height: "100%",
+                maxHeight: 340,
+                objectFit: "contain"
+              }}
+            />
+          ) : (
+            <Package2
+              size={88}
+              strokeWidth={1}
+              aria-hidden="true"
+            />
+          )}
         </div>
+
 
         <div className="dialog-info">
 
@@ -1222,6 +1253,7 @@ function handleAddProduct(product: Product): void {
           session?.user.rol === "Cliente" &&
           (cartBusy || cartLoading)
         }
+        
       />
     )}
 

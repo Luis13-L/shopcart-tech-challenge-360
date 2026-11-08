@@ -15,9 +15,16 @@ export interface CatalogProductRow {
   CantidadFisica: number;
 }
 
+export interface CatalogImageRow {
+  IDProducto: number;
+  URLImagen: string;
+  TextoAlternativo: string | null;
+}
+
 export interface CatalogResult {
   rows: CatalogProductRow[];
   total: number;
+  images: CatalogImageRow[];
 }
 
 export async function findCatalogProducts(
@@ -102,11 +109,34 @@ if (
 }
 
 // Segundo resultado: productos de la pagina
+
 const rows = recordsets[1] as CatalogProductRow[];
+
+let images: CatalogImageRow[] = [];
+
+if (rows.length > 0) {
+  const productIds = [
+    ...new Set(
+      rows.map(row => row.IDProducto)
+    )
+  ];
+
+  const imageResult = await pool.request()
+    .input(
+      "IdsJson",
+      sql.NVarChar(sql.MAX),
+      JSON.stringify(productIds)
+    )
+    .execute<CatalogImageRow>(
+      "dbo.SP_Catalogo_ListarImagenesPrincipales"
+    );
+
+  images = imageResult.recordset;
+}
 
 return {
   rows,
-  total: totalRow.Total
+  total: totalRow.Total,
+  images
 };
-
 }

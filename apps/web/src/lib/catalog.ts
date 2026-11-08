@@ -7,6 +7,8 @@ export interface Product {
   sku: string;
   precioActual: string;
   cantidadFisica: number;
+  imagenUrl: string | null;
+  imagenAlt: string | null;
 }
 
 export interface Category {

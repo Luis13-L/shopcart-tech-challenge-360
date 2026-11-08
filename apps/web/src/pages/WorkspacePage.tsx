@@ -157,6 +157,15 @@ export function WorkspacePage() {
               Administrar categorías
             </Link>
           )}
+          {user.rol === "Administrador" && (
+            <Link
+              to="/administracion/productos"
+              className="btn btn-primary"
+            >
+              <LayoutDashboard size={18} />
+              Administrar productos
+            </Link>
+          )}
           <p className="workspace-notice">
             Este es el punto de entrada autenticado.
             Las operaciones específicas se incorporarán

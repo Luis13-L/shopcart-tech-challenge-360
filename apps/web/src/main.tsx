@@ -22,6 +22,7 @@ import "./styles/returns.css";
 import "./styles/operations.css";
 import "./styles/inventory.css";
 import "./styles/admin-categories.css";
+import "./styles/admin-products.css";
 
 const rootElement =
   document.getElementById("root");

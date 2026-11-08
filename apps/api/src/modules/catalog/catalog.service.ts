@@ -11,17 +11,33 @@ export async function listCatalogProducts(
 ) {
   const result = await findCatalogProducts(filters);
 
+  const imagesByProduct = new Map(
+    result.images.map(image => [
+      image.IDProducto,
+      image
+    ])
+  );
+
   return {
-    data: result.rows.map(row => ({
-      idProducto: row.IDProducto,
-      nombreProducto: row.NombreProducto,
-      idCategoria: row.IDCategoria,
-      nombreCategoria: row.NombreCategoria,
-      idVariante: row.IDVariante,
-      sku: row.SKU,
-      precioActual: row.PrecioActual,
-      cantidadFisica: row.CantidadFisica
-    })),
+    data: result.rows.map(row => {
+      const image = imagesByProduct.get(
+        row.IDProducto
+      );
+
+      return {
+        idProducto: row.IDProducto,
+        nombreProducto: row.NombreProducto,
+        idCategoria: row.IDCategoria,
+        nombreCategoria: row.NombreCategoria,
+        idVariante: row.IDVariante,
+        sku: row.SKU,
+        precioActual: row.PrecioActual,
+        cantidadFisica: row.CantidadFisica,
+
+        imagenUrl: image?.URLImagen ?? null,
+        imagenAlt: image?.TextoAlternativo ?? null
+      };
+    }),
 
     pagination: {
       page: filters.page,

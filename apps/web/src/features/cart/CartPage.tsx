@@ -386,9 +386,8 @@ export function CartPage() {
 
 
               <p className="cart-next-note">
-                Integraremos direcciones, cupones,
-                reservas de inventario y confirmación
-                de compra en el siguiente paso.
+                En el siguiente paso seleccionarás tu dirección,
+                reservarás inventario y confirmarás tu pedido.
               </p>
 
               <div className="cart-summary-security">

@@ -21,3 +21,27 @@
 - [ ] README actualizado con el frontend implementado.
 - [ ] Instalación reproducible en entorno limpio.
 
+
+## Pendientes del catálogo de productos
+
+- [ ] Listar productos activos e inactivos en administración.
+- [ ] Permitir reactivar productos desactivados.
+- [ ] Implementar creación y administración de variantes adicionales.
+- [ ] Administrar atributos de variantes (talla, color, etc.).
+- [ ] Permitir reemplazar la imagen principal del producto.
+- [ ] Eliminar imágenes anteriores únicamente después de confirmar el reemplazo.
+- [ ] Verificar limpieza de archivos de imágenes sin referencias.
+- [ ] Documentar almacenamiento y respaldo de imágenes.
+- [ ] Probar instalación limpia con imágenes de demostración.
+
+## Requisitos críticos pendientes
+
+- [ ] Integrar cupones en el frontend y checkout.
+- [ ] Completar administración de usuarios.
+- [ ] Integrar dashboard con gráficas y reportes.
+- [ ] Integrar consulta administrativa de bitácora.
+- [ ] Ejecutar pruebas de seguridad, concurrencia e idempotencia.
+- [ ] Actualizar README con instrucciones de instalación y ejecución.
+- [ ] Preparar la demostración y defensa técnica.
+```
+Si alguna tarea ya está completada y probada, puedes marcarla. Lo importante es mantener este documento actualizado.

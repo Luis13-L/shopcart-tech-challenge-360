@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   ArrowUpRight,
@@ -28,8 +28,11 @@ export function ProductCard({
   const [imageFailed, setImageFailed] =
     useState(false);
 
-  const imageUrl =
-    `/images/products/${encodeURIComponent(product.sku)}.webp`;
+  const imageUrl = product.imagenUrl;
+
+    useEffect(() => {
+      setImageFailed(false);
+    }, [imageUrl]);
 
   const soldOut =
     product.cantidadFisica <= 0;
@@ -43,7 +46,7 @@ export function ProductCard({
           {product.nombreCategoria}
         </span>
 
-        {imageFailed ? (
+        {!imageUrl || imageFailed ? (
 
           <div
             className="product-fallback"
@@ -61,10 +64,10 @@ export function ProductCard({
         ) : (
 
           <img
-            src={imageUrl}
-            alt={product.nombreProducto}
-            loading="lazy"
-            onError={() => setImageFailed(true)}
+              src={imageUrl}
+              alt={product.imagenAlt || product.nombreProducto}
+              loading="lazy"
+              onError={() => setImageFailed(true)}
           />
 
         )}

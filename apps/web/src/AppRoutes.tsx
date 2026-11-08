@@ -41,6 +41,10 @@ import {
   AdminCategoriesPage
 } from "./features/admin/AdminCategoriesPage";
 
+import {
+  AdminProductsPage
+} from "./features/admin/AdminProductsPage";
+
 import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
@@ -141,6 +145,10 @@ export default function AppRoutes() {
         <Route
           path="/administracion/categorias"
           element={<AdminCategoriesPage />}
+        />
+        <Route
+          path="/administracion/productos"
+          element={<AdminProductsPage />}
         />
       </Route>
 

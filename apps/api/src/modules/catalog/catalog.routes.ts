@@ -22,6 +22,14 @@ import {
   requireRole
 } from "../auth/auth.middleware.js";
 
+import {
+  uploadProductImage
+} from "./catalog.image.upload.js";
+
+import {
+  createProductWithImageController
+} from "./catalog.image.controller.js";
+
 export const catalogRouter = Router();
 
 // GET - Listar productos
@@ -37,6 +45,16 @@ catalogRouter.post(
   requireRole("Administrador"),
   createProductController
 );
+
+//imagenes
+catalogRouter.post(
+  "/with-image",
+  requireAuth,
+  requireRole("Administrador"),
+  uploadProductImage,
+  createProductWithImageController
+);
+
 
 // PATCH - Actualizar producto
 catalogRouter.patch(
