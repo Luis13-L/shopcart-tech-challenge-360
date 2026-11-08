@@ -23,3 +23,8 @@ build/
 
 # Logs
 *.log
+# Imágenes subidas por usuarios
+apps/api/uploads/products/*
+
+# Conservar estructura de carpetas
+!apps/api/uploads/products/.gitkeep
