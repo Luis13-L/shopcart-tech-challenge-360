@@ -166,6 +166,19 @@ export function WorkspacePage() {
               Administrar productos
             </Link>
           )}
+          
+          {/* Administracion de cupones */}
+
+          {user.rol === "Administrador" && (
+            <Link
+              to="/administracion/cupones"
+              className="btn btn-primary"
+            >
+              <LayoutDashboard size={18} />
+              Administrar cupones
+            </Link>
+          )}
+
           <p className="workspace-notice">
             Este es el punto de entrada autenticado.
             Las operaciones específicas se incorporarán

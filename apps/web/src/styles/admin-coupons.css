@@ -1,0 +1,347 @@
+/* ==========================================
+   SHOPCART — ADMINISTRACION DE CUPONES
+========================================== */
+
+/* DISTRIBUCION PRINCIPAL */
+
+.admin-coupon-layout {
+  display: grid;
+  grid-template-columns: 370px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+/* PANELES */
+
+.admin-coupon-panel {
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid #ebe9f3;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px #20204008;
+}
+
+/* ENCABEZADOS */
+
+.admin-coupon-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.admin-coupon-heading h2 {
+  margin: 0;
+  color: #292d43;
+  font-size: 20px;
+}
+
+.admin-coupon-heading button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* FORMULARIOS */
+
+.admin-coupon-form,
+.admin-coupon-scope {
+  display: grid;
+  gap: 15px;
+}
+
+.admin-coupon-form label,
+.admin-coupon-scope label {
+  display: grid;
+  gap: 7px;
+  color: #45495d;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.admin-coupon-form input,
+.admin-coupon-form select,
+.admin-coupon-scope select,
+.admin-coupon-filters input,
+.admin-coupon-filters select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid #e3e0ed;
+  border-radius: 9px;
+  background: white;
+  color: #33364a;
+  font: inherit;
+  font-size: 13px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-coupon-form input:focus,
+.admin-coupon-form select:focus,
+.admin-coupon-scope select:focus,
+.admin-coupon-filters input:focus,
+.admin-coupon-filters select:focus {
+  outline: 2px solid #a69af2;
+  outline-offset: 1px;
+}
+
+/* FORMULARIOS DE DOS COLUMNAS */
+
+.admin-coupon-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* CHECKBOX DE ACTIVACION */
+
+.admin-coupon-form label.admin-coupon-check {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.admin-coupon-check input {
+  width: auto;
+  accent-color: #7162ed;
+  cursor: pointer;
+}
+
+.admin-coupon-form small {
+  color: #85899b;
+  font-weight: 400;
+}
+
+/* BOTON PRINCIPAL */
+
+.admin-coupon-form .operator-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-coupon-form .operator-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* FILTROS */
+
+.admin-coupon-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 10px;
+  margin-bottom: 19px;
+}
+
+/* LISTADO DE CUPONES */
+
+.admin-coupon-list {
+  display: grid;
+  gap: 13px;
+}
+
+/* TARJETA INDIVIDUAL */
+
+.admin-coupon-item {
+  padding: 18px;
+  border: 1px solid #eeeaf5;
+  border-radius: 12px;
+  background: #fff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-coupon-item:hover {
+  border-color: #d6d0ff;
+  box-shadow: 0 8px 22px #7162ed0d;
+}
+
+/* CABECERA DEL CUPON */
+
+.admin-coupon-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-coupon-item-top small {
+  font-size: 11px;
+  color: #9295a3;
+}
+
+.admin-coupon-item-top h3 {
+  margin: 6px 0 0;
+  color: #292d43;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+/* ESTADO DEL CUPON */
+
+.admin-coupon-status {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-coupon-status.enabled {
+  background: #e8f7ee;
+  color: #227a49;
+}
+
+.admin-coupon-status.disabled {
+  background: #f0f1f4;
+  color: #747987;
+}
+
+/* VALOR DEL DESCUENTO */
+
+.admin-coupon-amount {
+  margin: 17px 0;
+  color: #7162ed;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.admin-coupon-amount small {
+  margin-left: 6px;
+  color: #85899b;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* INFORMACION ADICIONAL */
+
+.admin-coupon-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 17px;
+}
+
+.admin-coupon-facts span {
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: #f7f7fb;
+  color: #646a7d;
+  font-size: 11px;
+}
+
+/* ACCIONES */
+
+.admin-coupon-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.admin-coupon-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 13px;
+  border: 1px solid #e5e2ed;
+  border-radius: 8px;
+  background: white;
+  color: #45495d;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-coupon-actions button:hover:not(:disabled) {
+  background: #f6f4ff;
+  border-color: #c7bfff;
+}
+
+.admin-coupon-actions button:focus-visible {
+  outline: 2px solid #7162ed;
+  outline-offset: 2px;
+}
+
+.admin-coupon-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* CONFIGURACION DE ALCANCE */
+
+.admin-coupon-scope {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid #ded8ff;
+  border-radius: 12px;
+  background: #faf9ff;
+}
+
+.admin-coupon-scope h3 {
+  margin: 0;
+  color: #292d43;
+  font-size: 16px;
+}
+
+.admin-coupon-scope p {
+  color: #7b8091;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* ==========================================
+   RESPONSIVE — TABLETS
+========================================== */
+
+@media (max-width: 1000px) {
+  .admin-coupon-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE — MOVILES
+========================================== */
+
+@media (max-width: 520px) {
+  .admin-coupon-panel {
+    padding: 18px;
+  }
+
+  .admin-coupon-two,
+  .admin-coupon-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-coupon-amount {
+    font-size: 22px;
+  }
+
+  .admin-coupon-heading h2 {
+    font-size: 18px;
+  }
+
+  .admin-coupon-item {
+    padding: 15px;
+  }
+
+  .admin-coupon-actions button {
+    flex: 1;
+  }
+}

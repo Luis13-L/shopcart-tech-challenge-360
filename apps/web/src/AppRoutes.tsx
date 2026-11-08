@@ -1,4 +1,3 @@
-
 import {
   Navigate,
   Route,
@@ -45,15 +44,25 @@ import {
   AdminProductsPage
 } from "./features/admin/AdminProductsPage";
 
+// PASO 75A.4 - Administracion de cupones
+import {
+  AdminCouponsPage
+} from "./features/admin/AdminCouponsPage";
+
 import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
   return (
     <Routes>
 
-      {/* RUTAS PUBLICAS */}
+      {/* =====================================
+          RUTAS PUBLICAS
+      ===================================== */}
 
-      <Route path="/" element={<App />} />
+      <Route
+        path="/"
+        element={<App />}
+      />
 
       <Route
         path="/login"
@@ -65,7 +74,9 @@ export default function AppRoutes() {
         element={<RegisterPage />}
       />
 
-      {/* CLIENTE */}
+      {/* =====================================
+          CLIENTE
+      ===================================== */}
 
       <Route
         element={
@@ -103,7 +114,9 @@ export default function AppRoutes() {
         />
       </Route>
 
-      {/* OPERADOR Y ADMINISTRADOR */}
+      {/* =====================================
+          OPERADOR Y ADMINISTRADOR
+      ===================================== */}
 
       <Route
         element={
@@ -119,17 +132,21 @@ export default function AppRoutes() {
           path="/operacion"
           element={<WorkspacePage />}
         />
+
         <Route
           path="/operacion/pedidos"
           element={<OperatorOrdersPage />}
         />
+
         <Route
           path="/operacion/inventario"
           element={<OperatorInventoryPage />}
         />
       </Route>
 
-      {/* ADMINISTRADOR */}
+      {/* =====================================
+          ADMINISTRADOR
+      ===================================== */}
 
       <Route
         element={
@@ -142,17 +159,27 @@ export default function AppRoutes() {
           path="/administracion"
           element={<WorkspacePage />}
         />
+
         <Route
           path="/administracion/categorias"
           element={<AdminCategoriesPage />}
         />
+
         <Route
           path="/administracion/productos"
           element={<AdminProductsPage />}
         />
+
+        {/* PASO 75A.4 - Cupones */}
+        <Route
+          path="/administracion/cupones"
+          element={<AdminCouponsPage />}
+        />
       </Route>
 
-      {/* DESCONOCIDA */}
+      {/* =====================================
+          RUTA DESCONOCIDA
+      ===================================== */}
 
       <Route
         path="*"
