@@ -26,6 +26,7 @@ import "./styles/admin-products.css";
 import "./styles/admin-coupons.css";
 import "./styles/admin-users.css";
 import "./styles/admin-dashboard.css";
+import "./styles/admin-audit.css";
 
 const rootElement =
   document.getElementById("root");

@@ -1,12 +1,15 @@
 import { useState } from "react";
+
 import {
   ArrowLeft,
+  ClipboardList,
   LayoutDashboard,
   LogOut,
   ShieldCheck,
   UserRound,
   UsersRound
 } from "lucide-react";
+
 import {
   Link,
   useNavigate
@@ -200,6 +203,18 @@ export function WorkspacePage() {
             >
               <LayoutDashboard size={18} />
               Dashboard y reportes
+            </Link>
+          )}
+
+          {/* Consulta de auditoria */}
+
+          {user.rol === "Administrador" && (
+            <Link
+              to="/administracion/auditoria"
+              className="btn btn-primary"
+            >
+              <ClipboardList size={18} />
+              Consultar auditoría
             </Link>
           )}
 

@@ -39,7 +39,7 @@
 - [ ] Integrar cupones en el frontend y checkout.
 - [x] Completar administración de usuarios.
 - [x] Integrar dashboard con gráficas y reportes.
-- [ ] Integrar consulta administrativa de bitácora.
+- [x] Integrar consulta administrativa de bitácora.
 - [ ] Ejecutar pruebas de seguridad, concurrencia e idempotencia.
 - [ ] Actualizar README con instrucciones de instalación y ejecución.
 - [ ] Preparar la demostración y defensa técnica.
@@ -67,5 +67,51 @@
 
 - [ ] Verificar que ambas mejoras conserven
       los totales actuales de SQL Server.
+      
+
+## PASO 78 — Consulta administrativa de auditoría
+
+### Funcionalidades implementadas
+
+- [x] Integrar GET /api/audit en React.
+- [x] Crear cliente API tipado para auditoría.
+- [x] Implementar AdminAuditPage.tsx.
+- [x] Filtrar registros por módulo.
+- [x] Filtrar registros por usuario responsable.
+- [x] Filtrar registros por rango de fechas.
+- [x] Implementar paginación de 20 registros.
+- [x] Mostrar detalle de cada evento.
+- [x] Comparar valores anteriores y nuevos.
+- [x] Incorporar diseño responsivo.
+- [x] Proteger la ruta para Administrador.
+- [x] Integrar acceso desde el panel administrativo.
+
+### Seguridad y validaciones
+
+- [x] Validar permisos de Cliente, Operador y Administrador.
+- [x] Validar parámetros y errores HTTP.
+- [x] Verificar coincidencia con SQL Server.
+- [x] Verificar orden cronológico y paginación.
+- [x] Verificar inmutabilidad de los registros.
+- [x] Revisar exposición de información sensible.
+- [x] Completar 15 pruebas funcionales.
+- [x] Verificar build y lint sin errores.
+
+### Consideraciones técnicas
+
+- La consulta de auditoría es de solo lectura.
+- El ID de bitácora se conserva como string por ser BIGINT.
+- Las fechas de auditoría se presentan en UTC.
+- Los valores JSON se muestran como texto seguro.
+- La autorización se valida en Express y SQL Server.
+- La aplicación no permite modificar ni eliminar eventos.
+
+### Mejoras opcionales futuras
+
+- [ ] Mostrar el correo del usuario responsable
+      además de su identificador.
+- [ ] Incorporar filtros adicionales por acción.
+- [ ] Incorporar exportación de auditoría con
+      autorización y controles de privacidad.
 
 Si alguna tarea ya está completada y probada, puedes marcarla. Lo importante es mantener este documento actualizado.

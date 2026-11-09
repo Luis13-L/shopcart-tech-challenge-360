@@ -57,6 +57,10 @@ import {
   AdminDashboardPage
 } from "./features/admin/AdminDashboardPage";
 
+import {
+  AdminAuditPage
+} from "./features/admin/AdminAuditPage";
+
 import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
@@ -172,6 +176,12 @@ export default function AppRoutes() {
         <Route
           path="/administracion/dashboard"
           element={<AdminDashboardPage />}
+        />
+
+        {/* Bitacora administrativa */}
+        <Route
+          path="/administracion/auditoria"
+          element={<AdminAuditPage />}
         />
 
         <Route
