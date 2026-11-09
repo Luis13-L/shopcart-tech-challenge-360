@@ -1,8 +1,18 @@
+import type {
+  RequestHandler
+} from "express";
 
-import type { RequestHandler } from "express";
-import { jwtVerify } from "jose";
+import {
+  jwtVerify
+} from "jose";
 
-import { env } from "../../config/env.js";
+import {
+  env
+} from "../../config/env.js";
+
+import {
+  getCurrentPrincipal
+} from "./auth.current.repository.js";
 
 interface AuthPrincipal {
   id: number;
@@ -14,13 +24,17 @@ const jwtKey = Buffer.from(
   "base64url"
 );
 
-// Verificar autenticacion
+// ==========================================
+// VERIFICAR JWT Y PERMISOS VIGENTES
+// ==========================================
+
 export const requireAuth: RequestHandler = async (
   req,
   res,
   next
 ) => {
-  const authorization = req.headers.authorization;
+  const authorization =
+    req.headers.authorization;
 
   const match = authorization?.match(
     /^Bearer\s+(\S+)$/i
@@ -32,11 +46,18 @@ export const requireAuth: RequestHandler = async (
       code: "UNAUTHORIZED",
       message: "Token de acceso requerido"
     });
+
     return;
   }
 
+  // ========================================
+  // 1. VALIDAR JWT CRIPTOGRAFICAMENTE
+  // ========================================
+
+  let payload;
+
   try {
-    const { payload } = await jwtVerify(
+    const verified = await jwtVerify(
       match[1]!,
       jwtKey,
       {
@@ -46,29 +67,7 @@ export const requireAuth: RequestHandler = async (
       }
     );
 
-    const id = Number(payload.sub);
-
-    if (
-      !payload.sub ||
-      !Number.isSafeInteger(id) ||
-      id <= 0 ||
-      typeof payload.role !== "string" ||
-      payload.role.length === 0
-    ) {
-      res.status(401).json({
-        status: 401,
-        code: "INVALID_TOKEN",
-        message: "Token invalido"
-      });
-      return;
-    }
-
-    res.locals.auth = {
-      id,
-      role: payload.role
-    } satisfies AuthPrincipal;
-
-    next();
+    payload = verified.payload;
 
   } catch {
     res.status(401).json({
@@ -76,14 +75,80 @@ export const requireAuth: RequestHandler = async (
       code: "INVALID_TOKEN",
       message: "Token invalido o expirado"
     });
+
+    return;
+  }
+
+  const id = Number(payload.sub);
+
+  if (
+    !payload.sub ||
+    !Number.isSafeInteger(id) ||
+    id <= 0 ||
+    typeof payload.role !== "string" ||
+    typeof payload.sv !== "string" ||
+    !/^[1-9]\d*$/.test(payload.sv)
+  ) {
+    res.status(401).json({
+      status: 401,
+      code: "INVALID_TOKEN",
+      message: "Token invalido"
+    });
+
+    return;
+  }
+
+  // ========================================
+  // 2. VALIDAR USUARIO EN SQL SERVER
+  // ========================================
+
+  try {
+    const current = await getCurrentPrincipal(
+      id
+    );
+
+    if (
+      !current ||
+      current.role !== payload.role ||
+      current.securityVersion !== payload.sv
+    ) {
+      res.status(401).json({
+        status: 401,
+        code: "SESSION_CHANGED",
+        message:
+          "La sesion o los permisos cambiaron. " +
+          "Inicia sesion nuevamente."
+      });
+
+      return;
+    }
+
+    // Solo confiar en los datos vigentes
+    // obtenidos de SQL Server.
+
+    res.locals.auth = {
+      id: current.id,
+      role: current.role
+    } satisfies AuthPrincipal;
+
+    next();
+
+  } catch (error) {
+    // Si SQL Server falla, no autorizar
+    // la solicitud por defecto.
+    // Dejar el error al middleware global.
+
+    next(error);
   }
 };
 
-// Verificar autorizacion por rol
+// ==========================================
+// VERIFICAR ROL AUTORIZADO
+// ==========================================
+
 export function requireRole(
   ...allowedRoles: string[]
 ): RequestHandler {
-
   return (_req, res, next) => {
     const auth = res.locals.auth as
       | AuthPrincipal
@@ -95,6 +160,7 @@ export function requireRole(
         code: "UNAUTHORIZED",
         message: "Autenticacion requerida"
       });
+
       return;
     }
 
@@ -104,6 +170,7 @@ export function requireRole(
         code: "FORBIDDEN",
         message: "Permisos insuficientes"
       });
+
       return;
     }
 

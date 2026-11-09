@@ -37,7 +37,7 @@
 ## Requisitos críticos pendientes
 
 - [ ] Integrar cupones en el frontend y checkout.
-- [ ] Completar administración de usuarios.
+- [x] Completar administración de usuarios.
 - [ ] Integrar dashboard con gráficas y reportes.
 - [ ] Integrar consulta administrativa de bitácora.
 - [ ] Ejecutar pruebas de seguridad, concurrencia e idempotencia.

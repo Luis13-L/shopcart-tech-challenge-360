@@ -24,6 +24,7 @@ import "./styles/inventory.css";
 import "./styles/admin-categories.css";
 import "./styles/admin-products.css";
 import "./styles/admin-coupons.css";
+import "./styles/admin-users.css";
 
 const rootElement =
   document.getElementById("root");

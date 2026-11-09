@@ -4,9 +4,9 @@ import {
   LayoutDashboard,
   LogOut,
   ShieldCheck,
-  UserRound
+  UserRound,
+  UsersRound
 } from "lucide-react";
-
 import {
   Link,
   useNavigate
@@ -176,6 +176,18 @@ export function WorkspacePage() {
             >
               <LayoutDashboard size={18} />
               Administrar cupones
+            </Link>
+          )}
+
+          {/* Administración de usuarios */}
+
+          {user.rol === "Administrador" && (
+            <Link
+              to="/administracion/usuarios"
+              className="btn btn-primary"
+            >
+              <UsersRound size={18} />
+              Administrar usuarios
             </Link>
           )}
 

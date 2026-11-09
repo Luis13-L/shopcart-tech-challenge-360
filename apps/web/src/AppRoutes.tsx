@@ -44,10 +44,14 @@ import {
   AdminProductsPage
 } from "./features/admin/AdminProductsPage";
 
-// PASO 75A.4 - Administracion de cupones
+// Administracion de cupones
 import {
   AdminCouponsPage
 } from "./features/admin/AdminCouponsPage";
+
+import {
+  AdminUsersPage
+} from "./features/admin/AdminUsersPage";
 
 import { RequireRole } from "./auth/RequireRole";
 
@@ -175,7 +179,13 @@ export default function AppRoutes() {
           path="/administracion/cupones"
           element={<AdminCouponsPage />}
         />
+        {/* PASO 76A.4.4 - Administración de usuarios */}
+        <Route
+          path="/administracion/usuarios"
+          element={<AdminUsersPage />}
+        />
       </Route>
+
 
       {/* =====================================
           RUTA DESCONOCIDA
