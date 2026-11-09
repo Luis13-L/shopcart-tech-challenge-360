@@ -38,10 +38,34 @@
 
 - [ ] Integrar cupones en el frontend y checkout.
 - [x] Completar administración de usuarios.
-- [ ] Integrar dashboard con gráficas y reportes.
+- [x] Integrar dashboard con gráficas y reportes.
 - [ ] Integrar consulta administrativa de bitácora.
 - [ ] Ejecutar pruebas de seguridad, concurrencia e idempotencia.
 - [ ] Actualizar README con instrucciones de instalación y ejecución.
 - [ ] Preparar la demostración y defensa técnica.
 ```
+
+
+## Mejoras pendientes del dashboard administrativo
+
+- [x] Integrar reportes de ventas netas por período.
+- [x] Integrar ventas por categoría.
+- [x] Integrar top 10 de productos.
+- [x] Mostrar indicadores comerciales.
+- [x] Implementar filtros de fechas y agrupación.
+- [x] Proteger acceso exclusivo de Administrador.
+- [x] Validar indicadores contra SQL Server.
+- [x] Completar 15 pruebas funcionales.
+
+### Mejoras de presentación
+
+- [ ] Mostrar el nombre real de cada categoría
+      en lugar de "Categoría #ID".
+
+- [ ] Representar con valor cero los períodos
+      sin ventas en la gráfica temporal.
+
+- [ ] Verificar que ambas mejoras conserven
+      los totales actuales de SQL Server.
+
 Si alguna tarea ya está completada y probada, puedes marcarla. Lo importante es mantener este documento actualizado.

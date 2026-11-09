@@ -53,6 +53,10 @@ import {
   AdminUsersPage
 } from "./features/admin/AdminUsersPage";
 
+import {
+  AdminDashboardPage
+} from "./features/admin/AdminDashboardPage";
+
 import { RequireRole } from "./auth/RequireRole";
 
 export default function AppRoutes() {
@@ -162,6 +166,12 @@ export default function AppRoutes() {
         <Route
           path="/administracion"
           element={<WorkspacePage />}
+        />
+
+        {/* Dashboard administrativo */}
+        <Route
+          path="/administracion/dashboard"
+          element={<AdminDashboardPage />}
         />
 
         <Route

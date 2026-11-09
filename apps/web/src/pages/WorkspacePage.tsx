@@ -191,6 +191,18 @@ export function WorkspacePage() {
             </Link>
           )}
 
+          {/* Dashboard administrativo */}
+
+          {user.rol === "Administrador" && (
+            <Link
+              to="/administracion/dashboard"
+              className="btn btn-primary"
+            >
+              <LayoutDashboard size={18} />
+              Dashboard y reportes
+            </Link>
+          )}
+
           <p className="workspace-notice">
             Este es el punto de entrada autenticado.
             Las operaciones específicas se incorporarán

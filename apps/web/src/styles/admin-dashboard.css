@@ -1,0 +1,432 @@
+/* ==========================================
+   SHOPCART - DASHBOARD ADMINISTRATIVO
+   PASO 77D.1
+========================================== */
+
+/* ==========================================
+   TARJETAS GENERALES
+========================================== */
+
+.admin-dashboard-card {
+  min-width: 0;
+  padding: 26px;
+  margin-bottom: 24px;
+  border: 1px solid #ebe9f3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(37, 35, 65, 0.035);
+}
+
+/* ==========================================
+   ENCABEZADOS DE SECCION
+========================================== */
+
+.admin-dashboard-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-dashboard-heading h2 {
+  margin: 0;
+  color: #292d43;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.admin-dashboard-heading p {
+  margin: 8px 0 0;
+  color: #85899b;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.admin-dashboard-heading > svg {
+  color: #7162ed;
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   FILTROS DE FECHAS
+========================================== */
+
+.admin-dashboard-filters {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(145px, 0.8fr)
+    auto
+    auto;
+  align-items: end;
+  gap: 13px;
+}
+
+.admin-dashboard-filters label {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  color: #45495d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-dashboard-filters input,
+.admin-dashboard-filters select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #e3e0ed;
+  border-radius: 9px;
+  background: #fafaff;
+  color: #33364a;
+  font: inherit;
+  font-size: 12px;
+  color-scheme: light;
+}
+
+.admin-dashboard-filters input:focus,
+.admin-dashboard-filters select:focus {
+  outline: 2px solid #a69af2;
+  outline-offset: 2px;
+}
+
+.admin-dashboard-filters button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   GRID DE INDICADORES
+========================================== */
+
+.admin-dashboard-metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.admin-dashboard-metric {
+  min-width: 0;
+  padding: 23px;
+  border: 1px solid #ebe9f3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(37, 35, 65, 0.035);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-dashboard-metric:hover {
+  transform: translateY(-2px);
+  border-color: #d8d0f9;
+  box-shadow: 0 12px 30px rgba(37, 35, 65, 0.07);
+}
+
+.admin-dashboard-metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  margin-bottom: 19px;
+  border-radius: 12px;
+  background: #f0edff;
+  color: #7162ed;
+}
+
+.admin-dashboard-metric:nth-child(2)
+.admin-dashboard-metric-icon {
+  background: #e8f7f0;
+  color: #258256;
+}
+
+.admin-dashboard-metric:nth-child(3)
+.admin-dashboard-metric-icon {
+  background: #e9f2ff;
+  color: #3673b7;
+}
+
+.admin-dashboard-metric:nth-child(4)
+.admin-dashboard-metric-icon {
+  background: #fff2e7;
+  color: #c27a32;
+}
+
+.admin-dashboard-metric p {
+  margin: 0 0 10px;
+  color: #85899b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-dashboard-metric strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #292d43;
+  font-size: clamp(20px, 2vw, 27px);
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-dashboard-metric small {
+  display: block;
+  color: #9295a4;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   GRAFICAS
+========================================== */
+
+.admin-dashboard-chart {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/*
+   Recharts recibe su altura directamente
+   desde AdminDashboardPage.tsx.
+
+   El contenedor utiliza el ancho disponible
+   sin agregar desplazamiento horizontal.
+*/
+
+.admin-dashboard-chart svg {
+  max-width: 100%;
+}
+
+.admin-dashboard-chart .recharts-cartesian-axis-tick-value {
+  font-family: inherit;
+}
+
+.admin-dashboard-chart .recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* ==========================================
+   TOOLTIP DE RECHARTS
+========================================== */
+
+.admin-dashboard-chart
+.recharts-default-tooltip {
+  border: 1px solid #ebe9f3 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 9px 24px rgba(37, 35, 65, 0.08);
+}
+
+.admin-dashboard-chart
+.recharts-tooltip-label {
+  margin-bottom: 7px !important;
+  color: #292d43 !important;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-dashboard-chart
+.recharts-tooltip-item {
+  font-size: 12px;
+}
+
+/* ==========================================
+   DISTRIBUCION DE GRAFICAS INFERIORES
+========================================== */
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 22px;
+}
+
+.admin-dashboard-grid
+.admin-dashboard-card {
+  min-width: 0;
+  height: 100%;
+  margin-bottom: 0;
+}
+
+/* ==========================================
+   NOTAS INFORMATIVAS
+========================================== */
+
+.admin-dashboard-note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid #f0eef5;
+  color: #9295a4;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+/* ==========================================
+   CARGANDO / SIN DATOS / ERROR
+========================================== */
+
+.admin-dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 220px;
+  padding: 26px 16px;
+  color: #85899b;
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.admin-dashboard-empty p {
+  max-width: 450px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-dashboard-empty .operator-primary {
+  margin-top: 8px;
+}
+
+/* ==========================================
+   FOCUS Y ESTADOS DESHABILITADOS
+========================================== */
+
+.admin-dashboard-filters button:focus-visible,
+.admin-dashboard-empty button:focus-visible {
+  outline: 2px solid #7162ed;
+  outline-offset: 3px;
+}
+
+.admin-dashboard-filters button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   RESPONSIVE - LAPTOP
+========================================== */
+
+@media (max-width: 1100px) {
+  .admin-dashboard-filters {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-dashboard-filters button {
+    width: 100%;
+  }
+
+  .admin-dashboard-metrics {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ==========================================
+   RESPONSIVE - TABLET
+========================================== */
+
+@media (max-width: 850px) {
+  .admin-dashboard-card {
+    padding: 22px;
+  }
+
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-grid
+  .admin-dashboard-card {
+    height: auto;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE - MOVIL
+========================================== */
+
+@media (max-width: 600px) {
+  .admin-dashboard-card {
+    padding: 18px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+  }
+
+  .admin-dashboard-heading {
+    gap: 10px;
+    margin-bottom: 19px;
+  }
+
+  .admin-dashboard-heading h2 {
+    font-size: 17px;
+  }
+
+  .admin-dashboard-filters {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .admin-dashboard-filters button {
+    width: 100%;
+  }
+
+  .admin-dashboard-metrics {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    margin-bottom: 18px;
+  }
+
+  .admin-dashboard-metric {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .admin-dashboard-metric strong {
+    font-size: 25px;
+  }
+
+  .admin-dashboard-grid {
+    gap: 18px;
+  }
+
+  .admin-dashboard-chart {
+    width: 100%;
+  }
+
+  .admin-dashboard-note {
+    font-size: 10px;
+  }
+}
+
+/* ==========================================
+   ACCESIBILIDAD
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-dashboard-metric {
+    transition: none;
+  }
+
+  .admin-dashboard-metric:hover {
+    transform: none;
+  }
+}
