@@ -10,7 +10,8 @@ import {
   Pencil,
   RefreshCw,
   Tag,
-  Power
+  Power,
+  Layers
 } from "lucide-react";
 import { Link } from "react-router";
 import {
@@ -42,6 +43,8 @@ import {
 import {
   reactivateAdminProduct
 } from "./admin.products.reactivate.api";
+import { AdminVariantsPanel } from "./AdminVariantsPanel";
+import type { AdminVariant } from "./admin.variants.api";
 type ProductStatusFilter = "all" | "active" | "inactive";
 
 interface EditForm {
@@ -92,6 +95,8 @@ export function AdminProductsPage() {
     useState<EditForm | null>(null);
   const [priceEditing, setPriceEditing] =
     useState<PriceForm | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<AdminProduct | null>(null);
   const [image, setImage] =
     useState<File | null>(null);
   const [imagePreview, setImagePreview] =
@@ -419,11 +424,13 @@ export function AdminProductsPage() {
   ): void {
     event.preventDefault();
     setPage(1);
+    setSelectedProduct(null);
     setSearch(searchDraft.trim());
   }
   function handleStatusChange(status: ProductStatusFilter): void {
     setStatusFilter(status);
     setPage(1);
+    setSelectedProduct(null);
     setEditing(null);
     setPriceEditing(null);
   }
@@ -724,6 +731,22 @@ export function AdminProductsPage() {
                       </td>
 
                       <td>
+                        <div className="admin-product-actions" style={{ marginBottom: 8 }}>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            aria-pressed={selectedProduct?.idProducto === product.idProducto}
+                            onClick={() => {
+                              setSelectedProduct(current => current?.idProducto === product.idProducto
+                                ? null
+                                : product);
+                              setEditing(null);
+                              setPriceEditing(null);
+                            }}
+                          >
+                            <Layers size={15} /> Variantes
+                          </button>
+                        </div>
                         {product.activo ? (
                           <div className="admin-product-actions">
                             <button
@@ -815,7 +838,10 @@ export function AdminProductsPage() {
               <button
                 type="button"
                 disabled={page <= 1 || busy || loading}
-                onClick={() => setPage(current => current - 1)}
+                onClick={() => {
+                  setSelectedProduct(null);
+                  setPage(current => current - 1);
+                }}
               >
                 Anterior
               </button>
@@ -829,7 +855,10 @@ export function AdminProductsPage() {
                   busy ||
                   loading
                 }
-                onClick={() => setPage(current => current + 1)}
+                onClick={() => {
+                  setSelectedProduct(null);
+                  setPage(current => current + 1);
+                }}
               >
                 Siguiente
               </button>
@@ -841,6 +870,26 @@ export function AdminProductsPage() {
             referencia, no a todas las variantes del producto.
           </p>
         </section>
+
+        {selectedProduct && (
+          <AdminVariantsPanel
+            key={selectedProduct.idProducto}
+            product={rows.find(row => row.idProducto === selectedProduct.idProducto) ?? selectedProduct}
+            revision={revision}
+            onChanged={() => setRevision(value => value + 1)}
+            onClose={() => setSelectedProduct(null)}
+            onEditPrice={(variant: AdminVariant) => {
+              setEditing(null);
+              setPriceEditing({
+                idVariante: variant.idVariante,
+                sku: variant.sku,
+                precioAnterior: variant.precioActual,
+                precioNuevo: variant.precioActual,
+                motivo: ""
+              });
+            }}
+          />
+        )}
 
         {editing && (
           <section className="admin-product-card">

@@ -1,125 +1,158 @@
 # ShopCart — Tech Challenge 360
 
-Plataforma de comercio electrónico desarrollada para el **Tech Challenge 360**. La solución prioriza integridad de datos, seguridad, concurrencia, idempotencia y trazabilidad de las operaciones de compra.
+Plataforma web de comercio electrónico desarrollada para el **Tech Challenge 360 de Grupo Pentandra**. Incluye **SQL Server**, una **API REST en Node.js + Express + TypeScript** y un **frontend en React + TypeScript**. La solución prioriza integridad transaccional, autorización por roles, trazabilidad, idempotencia y una experiencia de compra utilizable.
 
-> **Estado del repositorio (Fase 1):** backend Node.js/Express/TypeScript y base de datos SQL Server implementados mediante migraciones `001`–`050`, con pruebas SQL y verificaciones manuales. **Fase 2:** interfaz React/TypeScript e integración visual pendientes. Los detalles y las limitaciones se presentan al final.
+> **Estado de entrega (9 de noviembre de 2026).** API, frontend y módulos principales integrados. El catálogo administrativo permite gestionar productos, categorías y variantes, con SKU, atributos, precio y existencia por variante. Las migraciones previstas abarcan `001`–`061`, incluida la corrección de la validación de SKU con guiones. La reproducción desde cero y la regresión completa deben verificarse en un segundo entorno antes de afirmar que la aplicación está certificada para producción.
 
 ## 1. Tecnologías
 
-| Componente | Tecnología |
-|---|---|
-| Backend | Node.js 24, Express 5, TypeScript |
-| Base de datos | SQL Server 2019+ y T-SQL |
-| Persistencia | Stored Procedures parametrizados con `mssql`, sin ORM |
-| Validaciones | Zod |
-| Autenticación | bcrypt, JWT (`jose`) y refresh tokens rotativos |
-| Seguridad HTTP | Helmet, CORS, rate limiting y autorización por roles |
-| Pruebas | Scripts SQL, SSMS y Postman |
-| Frontend planificado | React + TypeScript |
-| Imágenes planificadas para la demo | Archivos estáticos WebP y referencias URL en SQL Server |
+| Capa | Tecnología |
+| --- | --- |
+| Base de datos | Microsoft SQL Server 2019 o superior, T-SQL, Stored Procedures |
+| Backend | Node.js 24, Express 5, TypeScript en modo `strict` |
+| Validación y seguridad | Zod, JWT con `jose`, bcryptjs, refresh tokens con rotación, Helmet, CORS, rate limiting |
+| Frontend | React 19, TypeScript, Vite, React Router, SweetAlert2, Recharts |
+| Imágenes | Subida de archivos JPG/PNG/WebP con validaciones, metadatos en SQL Server y archivos locales |
+| Herramientas de desarrollo | Git, npm, SSMS y Postman |
 
-## 2. Arquitectura
+**Arquitectura:**
 
 ```text
-Cliente HTTP / React (Fase 2)
-             |
-             v
-Router → Middleware → Controller → Service → Repository
-                                              |
-                                              v
-                                      Stored Procedure
-                                              |
-                                              v
-                                          SQL Server
+Navegador / React + TypeScript
+            │
+            ▼
+Express Router → Middleware JWT / rol → Controller → Service → Repository
+                                                         │
+                                                         ▼
+                                         Stored Procedures parametrizados
+                                                         │
+                                                         ▼
+                                                    SQL Server
 ```
 
-- **Router:** expone las rutas y aplica los controles de acceso iniciales.
-- **Middleware:** valida JWT y rol cuando corresponde.
-- **Controller:** valida entrada, transforma solicitudes y asigna códigos HTTP.
-- **Service:** representa los casos de uso y coordina la capa de acceso.
-- **Repository:** ejecuta Stored Procedures con parámetros tipados.
-- **SQL Server:** aplica restricciones de integridad, autorización sensible, transacciones, bloqueos, auditoría e idempotencia.
+- **Router y middleware:** exposición de rutas, autenticación, roles y límites HTTP.
 
-**Justificación:** esta separación permite probar y mantener cada responsabilidad de forma independiente. No se utiliza un ORM ni consultas SQL de negocio embebidas en los repositorios, de acuerdo con el enfoque requerido por el reto.
+- **Controller:** validación de entradas, respuestas y errores HTTP.
 
-## 3. Instalación desde cero
+- **Service:** coordinación de casos de uso.
 
-### Requisitos
+- **Repository:** invocación de Stored Procedures mediante parámetros tipados de `mssql`.
 
-- Node.js 24 y npm.
-- SQL Server 2019 o superior, con autenticación SQL Server habilitada.
-- SQL Server Management Studio (SSMS) o herramienta compatible con scripts T-SQL y `GO`.
-- Git.
-- Cuenta administrativa de SQL Server **únicamente para instalación y migraciones**.
+- **SQL Server:** restricciones de integridad, transacciones, bloqueo concurrente, auditoría y reglas críticas de negocio.
 
-La base de datos se denomina `ShopCartDB`. La API utiliza el puerto `3000` por defecto. El puerto de SQL Server depende de cada instalación (`14333` en el archivo de ejemplo es ilustrativo).
+No se utiliza ORM para acceder a los datos de negocio. La API no concatena SQL con valores enviados por usuarios.
 
-### Paso 1. Clonar repositorio
+## 2. Estructura principal
+
+```text
+shopcart-tech-challenge-360/
+├── apps/
+│   ├── api/
+│   │   ├── .env.example
+│   │   ├── scripts/generate-demo-hashes.mjs
+│   │   ├── src/app.ts
+│   │   └── src/modules/
+│   │       ├── auth/                 # identidad y sesiones
+│   │       ├── catalog/              # productos, variantes, imágenes, precios
+│   │       ├── categories/           # categorías
+│   │       ├── cart/                 # carrito
+│   │       ├── checkout/             # reservas, cotización y compra
+│   │       ├── coupons/              # promociones
+│   │       ├── inventory/            # existencias y kardex
+│   │       ├── orders/               # pedidos, estados y devoluciones
+│   │       ├── reports/              # reportes
+│   │       ├── audit/                # bitácora
+│   │       ├── addresses/            # direcciones
+│   │       └── users/                # administración de usuarios
+│   └── web/
+│       └── src/features/             # pantallas de Cliente, Operador y Admin
+├── database/
+│   ├── migrations/                   # scripts SQL versionados
+│   ├── seeds/                        # datos iniciales y usuarios de prueba
+│   └── tests/                        # pruebas SQL
+└── docs/diagrams/                    # diagramas entidad-relación y estados
+```
+
+## 3. Instalación y ejecución local
+
+### 3.1 Requisitos previos
+
+- Windows con PowerShell (los comandos mostrados usan este entorno); Git y npm.
+
+- **Node.js 24**.
+
+- **SQL Server 2019 o superior** con conexiones TCP/IP y autenticación SQL Server habilitadas.
+
+- **SQL Server Management Studio** o editor que ejecute scripts T-SQL y separadores `GO`.
+
+- Acceso administrativo a SQL Server **solo durante la instalación de migraciones**.
+
+- Puertos disponibles: `3000` (API), `5173` (frontend) y el puerto configurado de SQL Server.
+
+### 3.2 Clonar el repositorio
 
 ```powershell
 git clone https://github.com/Luis13-L/shopcart-tech-challenge-360.git
 cd shopcart-tech-challenge-360
 ```
 
-### Paso 2. Crear la base de datos
+### 3.3 Crear la base de datos y permisos
 
-Desde SSMS, con una cuenta administrativa:
+1. En SSMS, conectado con un usuario administrativo, ejecutar `database/migrations/001_CreateDatabase.sql`, que crea `ShopCartDB`.
 
-```text
-database/migrations/001_CreateDatabase.sql
-```
+2. Crear un **login SQL Server** denominado `shopcart_api` con una contraseña robusta local. Establecer `ShopCartDB` como base predeterminada.
 
-### Paso 3. Crear el login de la API
+3. No conceder a ese login `sysadmin`, `db_owner`, `db_datareader` ni `db_datawriter`. Los scripts de migración otorgan permisos específicos de `EXECUTE`.
 
-En SSMS: **Security → Logins → New Login**.
+4. Ejecutar **todas las migraciones en orden numérico**, desde `002_SecurityTables.sql` hasta `061_FixVariantSkuHyphenValidation.sql` inclusive. No omitir la `059`, `060` ni `061`.
 
-- Login: `shopcart_api`.
-- Autenticación: **SQL Server Authentication**.
-- Contraseña: robusta, local y no incluida en el repositorio.
-- Base predeterminada: `ShopCartDB`.
-- No conceder `sysadmin`, `db_owner`, `db_datareader` ni `db_datawriter`.
+5. Revisar que la migración `011_SystemHealthProcedure.sql` haya creado/vinculado el usuario de base de datos `shopcart_api` y sus primeros permisos.
 
-La migración `011_SystemHealthProcedure.sql` vincula este login con un usuario de `ShopCartDB` si es necesario y habilita los permisos iniciales de ejecución.
+> Las migraciones se aplican con una cuenta administrativa; **no** se ejecutan con la cuenta limitada de la API. Si una migración da error, detener la secuencia, consultar el mensaje y corregir la causa antes de continuar. No recrear ni borrar tablas con datos para ocultar el problema.
 
-### Paso 4. Aplicar migraciones
+**Migraciones relevantes del catálogo:**
 
-Ejecutar **una a una, en orden numérico**, las migraciones restantes:
+| Número | Finalidad |
+| --- | --- |
+| `003` | Tablas de productos, variantes, atributos e imágenes |
+| `040` | Auditoría de cambios del catálogo |
+| `041` | Historial de precios de variantes |
+| `045` | Inicialización automática de existencias en cero al crear variantes |
+| `051` | Funciones de imágenes de producto |
+| `057` | Listado administrativo de productos activos e inactivos |
+| `058` | Reactivación de productos con restauración de variantes basada en auditoría |
+| `059` | Creación de variantes con atributos |
+| `060` | Listado administrativo y cambio de estado de variantes |
+| `061` | Corrección de validación de SKU que contienen guiones |
 
-```text
-database/migrations/002_SecurityTables.sql
-...
-database/migrations/045_FixVariantInventoryInitialization.sql
-database/migrations/046_CustomerAddressesProcedures.sql
-database/migrations/047_CustomerOrderHistoryProcedures.sql
-database/migrations/048_InventoryApiProcedures.sql
-database/migrations/049_DiscountedOrderReturns.sql
-database/migrations/050_CategoryScopedCoupons.sql
-```
-
-**No omitir números ni ejecutar la migración 050 antes de la 049.** Las migraciones modifican objetos persistentes y deben ejecutarse con la cuenta administrativa; la identidad `shopcart_api` solo debe ejecutar los procedimientos autorizados.
-
-El registro de aplicación se encuentra en `dbo.SchemaMigrations`. Para inspeccionarlo:
+Para revisar el estado:
 
 ```sql
 USE ShopCartDB;
-SELECT Numero, Nombre, FechaAplicacion
+GO
+SELECT Numero, Nombre
 FROM dbo.SchemaMigrations
 ORDER BY Numero;
+GO
 ```
 
-**Nota sobre la migración 050:** adapta los procedimientos de checkout y devoluciones existentes para soportar cupones por categoría. Si se obtiene un error, no se deben eliminar ni recrear manualmente procedimientos o tablas. Revisar el error y la versión exacta de los scripts.
+En una instalación nueva, el listado debe reflejar todas las migraciones hasta la `061`, sin huecos.
 
-### Paso 5. Datos iniciales
+### 3.4 Cargar datos semilla
 
-Ejecutar:
+Después de aplicar las migraciones, ejecutar en SSMS:
 
 ```text
 database/seeds/001_InitialData.sql
 ```
 
-Crea los roles `Cliente`, `Operador` y `Administrador`, una categoría y un producto de ejemplo. No distribuye contraseñas administrativas predeterminadas.
+Este script prepara los roles y una categoría/producto de muestra; **no** crea credenciales de acceso predefinidas. La variante de muestra inicia sin existencia para evitar ventas sin stock.
 
-### Paso 6. Configurar la API
+Para crear las cuentas de demostración, seguir el apartado 4.
+
+### 3.5 Configurar y ejecutar la API
+
+En una terminal PowerShell situada en el repositorio:
 
 ```powershell
 cd apps/api
@@ -127,301 +160,257 @@ npm ci
 Copy-Item .env.example .env
 ```
 
-Editar `apps/api/.env` con los datos **locales**:
+Completar `apps/api/.env` con los valores **reales de tu instalación**:
 
 ```dotenv
 NODE_ENV=development
 PORT=3000
 CORS_ORIGIN=http://localhost:5173
-JWT_SECRET=REEMPLAZAR_CON_SECRETO_ALEATORIO
+JWT_SECRET=REEMPLAZAR_CON_SECRETO_BASE64URL_DE_32_BYTES
 SQL_SERVER=localhost
 SQL_PORT=14333
 SQL_DATABASE=ShopCartDB
 SQL_USER=shopcart_api
-SQL_PASSWORD=REEMPLAZAR_CON_PASSWORD_LOCAL
+SQL_PASSWORD=REEMPLAZAR_CON_PASSWORD_SQL_LOCAL
 ```
 
-Generar `JWT_SECRET` con:
+El puerto `14333` es ilustrativo. Utilizar el puerto TCP/IP configurado en la instancia. `JWT_SECRET` debe ser exactamente **32 bytes codificados en base64url (43 caracteres)**; generarlo con:
 
 ```powershell
-node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
 ```
 
-Configurar el puerto real del servidor SQL y reemplazar todas las variables de ejemplo. **No subir `.env` ni credenciales al repositorio.**
+Conservar el valor de forma segura y **no subir `.env`** al repositorio.
+
+Compilar e iniciar:
 
 ```powershell
 npm run build
 npm run dev
 ```
 
-### Paso 7. Verificar servicios
-
-```http
-GET http://localhost:3000/api/health
-GET http://localhost:3000/api/health/db
-GET http://localhost:3000/api/catalog/products
-GET http://localhost:3000/api/catalog/categories
-```
-
-La respuesta de `/api/health/db` debe confirmar la conexión con SQL Server.
-
-## 4. Usuarios de demostración
-
-| Cuenta | Rol |
-|---|---|
-| `admin.demo@shopcart.test` | Administrador |
-| `operador.demo@shopcart.test` | Operador |
-| `cliente.demo@shopcart.test` | Cliente |
-
-**Las contraseñas no se publican.** Para crear cuentas en una instalación nueva:
-
-1. Ejecutar `node scripts/generate-demo-hashes.mjs` desde `apps/api` y generar tres hashes bcrypt usando contraseñas diferentes de al menos 12 caracteres. La entrada puede verse en la terminal: realizarlo en un entorno seguro.
-2. Copiar `database/seeds/002_DemoUsers.sql` a una ubicación temporal **fuera del repositorio**.
-3. Sustituir en esa copia `REEMPLAZAR_HASH_ADMIN`, `REEMPLAZAR_HASH_OPERADOR` y `REEMPLAZAR_HASH_CLIENTE` con los hashes generados.
-4. Ejecutar el SQL temporal con una cuenta administrativa y eliminarlo después.
-
-El script evita sobrescribir cuentas existentes y comprueba los roles esperados.
-
-**Inicio de sesión:**
-
-```http
-POST http://localhost:3000/api/auth/login
-Content-Type: application/json
-```
-
-```json
-{
-  "correo": "admin.demo@shopcart.test",
-  "password": "CONTRASENA_LOCAL"
-}
-```
-
-La API responde con token de acceso y datos de la sesión. Los endpoints protegidos utilizan `Authorization: Bearer <accessToken>`.
-
-## 5. Funcionalidades implementadas en Fase 1
-
-| Requisito | Implementación actual |
-|---|---|
-| **RF-01 — Usuarios y seguridad** | Registro de clientes, login, JWT, refresh tokens con rotación, roles y restricciones de acceso. |
-| **RF-02 — Catálogo** | Listado público paginado con búsqueda, filtros, ordenamiento; administración de productos, categorías y precios; historial de precios. |
-| **RF-03 — Inventario** | Existencias físicas, movimientos de kardex con motivo y responsable, reservas vigentes y API para operador/administrador. |
-| **RF-04 — Carrito** | Crear/consultar carrito de cliente, agregar/actualizar/eliminar variantes y validar cantidades. |
-| **RF-05 — Cupones** | Porcentaje o importe fijo, límites y vigencia; cupón general o restringido a una categoría; integración con checkout y reembolsos. |
-| **RF-06 — Compra** | Direcciones del cliente, reserva de stock durante 15 minutos, checkout transaccional con clave de idempotencia y pago simulado. |
-| **RF-07 — Pedidos** | Cambios de estado, cancelaciones antes de despacho, devoluciones parciales y totales, importes proporcionales, historial del cliente. |
-| **RF-08 — Reportes** | Ventas, categorías, productos destacados y consulta administrativa de pedidos. |
-| **RF-09 — Auditoría** | Bitácora de eventos sensibles, registro de movimientos, cambios de estado y modificaciones de catálogo, precios y promociones. |
-
-**Alcance:** la existencia de código, pruebas SQL y endpoints no equivale a una certificación completa. Las pruebas de carga, concurrencia integral y reproducción de instalación desde cero siguen pendientes de ejecución independiente.
-
-### Rutas principales
-
-| Método y ruta | Acceso |
-|---|---|
-| `GET /api/health` y `GET /api/health/db` | Público |
-| `GET /api/catalog/products` | Público |
-| `POST /api/catalog/products`, `PATCH /api/catalog/products/:id`, `PATCH /api/catalog/products/:id/status` | Administrador |
-| `GET /api/catalog/categories` | Público |
-| `GET /api/catalog/categories/admin`, `POST /api/catalog/categories`, `PATCH /api/catalog/categories/:id`, `PATCH /api/catalog/categories/:id/status` | Administrador |
-| `PATCH /api/catalog/variants/:id/price` | Administrador |
-| `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` | Según operación |
-| `GET /api/auth/me` | Usuario autenticado |
-| `POST /api/cart`, `GET /api/cart/:id`, `PUT /api/cart/items`, `DELETE /api/cart/items/:id` | Cliente |
-| `POST /api/addresses`, `GET /api/addresses`, `GET /api/addresses/:id` | Cliente propietario |
-| `POST /api/checkout/reservations`, `POST /api/checkout/confirm` | Cliente |
-| `GET /api/orders/my`, `GET /api/orders/my/:id` | Cliente propietario |
-| `GET /api/orders` | Operador / Administrador |
-| `PATCH /api/orders/:id/status`, `POST /api/orders/:id/cancel`, `POST /api/orders/:id/returns` | Según rol y propietario; SQL valida permisos |
-| `POST /api/inventory/movements`, `GET /api/inventory/variants/:id`, `GET /api/inventory/variants/:id/movements` | Operador / Administrador |
-| `GET /api/coupons`, `POST /api/coupons`, `GET /api/coupons/:id`, `PUT /api/coupons/:id` | Administrador |
-| `PATCH /api/coupons/:id/status`, `PATCH /api/coupons/:id/category`, `GET /api/coupons/:id/uses` | Administrador |
-| `GET /api/reports/sales`, `GET /api/reports/categories`, `GET /api/reports/top-products` | Administrador |
-| `GET /api/audit` | Administrador |
-
-Las comprobaciones sensibles también se realizan en los Stored Procedures para evitar depender exclusivamente del rol registrado en el JWT.
-
-## 6. Decisiones de negocio y seguridad
-
-### Inventario, reservas y concurrencia
-
-Los movimientos de entrada, salida, ajustes y devoluciones se reflejan en el kardex. Las operaciones críticas usan transacciones con bloqueos como `UPDLOCK`/`HOLDLOCK`. La disponibilidad se calcula considerando existencias y reservas activas no vencidas; el stock físico se descuenta al confirmar el checkout.
-
-**Justificación:** evitar sobreventas y conservar trazabilidad. **Costo:** mayor contención ante accesos simultáneos sobre la misma variante.
-
-### Idempotencia
-
-Checkout y devoluciones utilizan claves de idempotencia y hashes de solicitud. Un reintento idéntico recupera su resultado previo; una misma clave con datos distintos produce conflicto.
-
-**Justificación:** proteger operaciones que pueden repetirse por latencia, errores de red o reenvíos del usuario.
-
-### Cupones generales y por categoría
-
-Un cupón general se aplica sobre el subtotal del carrito. Si tiene `IDCategoriaAplicable`, solo se usa el subtotal de esa categoría para comprobar elegibilidad, importe mínimo y descuento.
-
-El pedido conserva `IDCategoriaCupon` como dato histórico, de manera que las devoluciones asignen el descuento únicamente a las líneas elegibles. Los reembolsos aplican redondeo acumulado para evitar diferencias de centavos y no exceder el importe realmente pagado. La categoría de un cupón usado no puede cambiarse.
-
-**Justificación:** el importe reembolsado debe corresponder con el descuento realmente aplicado al comprar, aun cuando posteriormente cambie la configuración del catálogo o del cupón.
-
-### Estados de pedido y devoluciones
+Verificar en otra terminal o navegador:
 
 ```text
-PAGADO → PREPARANDO → DESPACHADO → ENTREGADO
-   |           |
-   └─ CANCELADO ┘
-
-ENTREGADO → DEVUELTO_PARCIAL → DEVUELTO_TOTAL
-          └──────────────────→ DEVUELTO_TOTAL
+http://localhost:3000/api/health
+http://localhost:3000/api/health/db
+http://localhost:3000/api/catalog/products
 ```
 
-La cancelación depende del estado permitido por las reglas de negocio. Las devoluciones se procesan por línea y cantidad pendiente, reintegran inventario, generan movimientos de kardex y conservan la trazabilidad del reembolso.
+La conexión de la API a SQL Server usa cifrado; en desarrollo puede confiar en el certificado local mediante la configuración de `apps/api/src/config/database.ts`. Para producción deben configurarse certificados válidos.
 
-**Importante:** el sistema usa **pagos simulados**. El cambio a `REEMBOLSADO` es un estado interno; no representa la devolución de dinero en una pasarela real.
+### 3.6 Configurar y ejecutar React
 
-### Seguridad
+En **otra terminal** desde la raíz del repositorio:
 
-- Contraseñas con hash bcrypt, nunca texto plano.
-- JWT de acceso de corta duración y refresh tokens con rotación/revocación; almacenamiento de hashes de refresh tokens.
-- Helmet, CORS configurado y limitación de intentos en autenticación.
-- Roles `Cliente`, `Operador`, `Administrador` y controles de pertenencia del recurso para evitar accesos indebidos.
-- Cuenta SQL dedicada `shopcart_api` con `EXECUTE` específico, sin permisos administrativos.
-- Auditoría de operaciones sensibles; `BitacoraAuditoria` impide modificaciones directas desde la cuenta de la API.
-- Uso de variables de entorno; secretos excluidos del control de versiones.
-
-## 7. Estrategia para imágenes de productos (decisión para Fase 2)
-
-### Situación actual
-
-La migración `003_CatalogTables.sql` ya creó `dbo.ImagenesProducto` con los campos:
-
-| Campo | Propósito |
-|---|---|
-| `IDImagenProducto` | Identificador de imagen |
-| `IDProducto` | Relación con el producto |
-| `URLImagen` | Ruta o URL del archivo |
-| `TextoAlternativo` | Accesibilidad y descripción |
-| `OrdenVisualizacion` | Imagen principal y orden de galería |
-
-**Todavía no está integrada la lectura de imágenes en el endpoint público del catálogo**: `SP_Catalogo_ListarProductos` devuelve productos, precios y existencias, pero no las URL. Tampoco se ha implementado un sistema de subida desde el panel administrativo. Ambas tareas se distinguen del esquema de datos que ya existe.
-
-### Solución elegida para la demostración
-
-1. Guardar imágenes de muestra, con licencia o autorización de uso, en `apps/web/public/images/products/`, preferentemente en **WebP**. Mantener una imagen de respaldo local.
-2. Registrar en `ImagenesProducto` una ruta relativa como `/images/products/botella-termica.webp`, su texto alternativo y el orden de visualización.
-3. En la Fase 2 ampliar mediante una **nueva migración** el procedimiento de consulta del catálogo para devolver una imagen principal por producto, sin romper la paginación ni la estructura de resultados existente.
-4. React resolverá la ruta contra el origen del frontend y mostrará la imagen con `loading="lazy"`, tamaño definido para evitar saltos visuales, texto alternativo y recurso de respaldo si falla la carga.
-5. Para un producto con varias imágenes, `OrdenVisualizacion` determinará su galería.
-
-Estructura planificada:
-
-```text
-apps/
-  web/
-    public/
-      images/
-        products/
-          botella-termica.webp
-          mouse-inalambrico.webp
-          placeholder.webp
+```powershell
+cd apps/web
+npm ci
+npm run build
+npm run lint
+npm run dev
 ```
 
-Ejemplo **ilustrativo** de un registro futuro (la ruta solo será válida si se agrega el archivo):
+Abrir **http://localhost:5173**. El proxy de desarrollo en `apps/web/vite.config.ts` redirige las solicitudes `/api` hacia `http://localhost:3000`.
 
-```text
-IDProducto:          3
-URLImagen:           /images/products/botella-termica.webp
-TextoAlternativo:    Botella térmica reutilizable de 500 ml
-OrdenVisualizacion:  0
-```
+> Iniciar API y frontend en terminales distintas. `npm run dev` es un entorno de desarrollo, no una configuración de despliegue público. Para producción hacen falta servidor/proxy HTTPS, variables de entorno, certificado TLS y almacenamiento persistente para archivos.
 
-### ¿Por qué no guardar imágenes binarias en SQL Server?
+## 4. Usuarios y credenciales de demostración
 
-- **Separación de responsabilidades:** SQL Server almacena datos de negocio y metadatos; un servidor estático o CDN sirve los archivos multimedia.
-- **Rendimiento:** evita transferir archivos grandes mediante consultas de catálogo o la API transaccional.
-- **Mantenibilidad:** permite sustituir imágenes sin alterar el esquema ni el modelo de productos.
-- **Portabilidad:** `URLImagen` puede pasar de una ruta local a una URL HTTPS de almacenamiento de objetos/CDN cuando exista despliegue productivo.
-- **Simplicidad para evaluación:** las imágenes estáticas versionadas junto con la aplicación React no requieren credenciales de un servicio externo ni una integración de subida durante la demostración.
+| Correo de ejemplo | Rol | Acceso principal |
+| --- | --- | --- |
+| `admin.demo@shopcart.test` | Administrador | Catálogo, variantes, usuarios, cupones, reportes, auditoría |
+| `operador.demo@shopcart.test` | Operador | Pedidos e inventario |
+| `cliente.demo@shopcart.test` | Cliente | Carrito, checkout, pedidos y direcciones |
 
-### Reglas previstas de calidad y seguridad
+**No existen contraseñas universales publicadas.** El evaluador o responsable de la instalación debe crear las contraseñas de prueba de forma local y recibirlas por un canal seguro separado del repositorio.
 
-- Formatos preferidos: WebP; JPEG/PNG solo cuando corresponda.
-- Preparar imágenes comprimidas y dimensiones adecuadas; no almacenar base64 en SQL Server.
-- Validar y normalizar las URL admitidas; si se habilita administración, restringir dominios HTTPS o rutas locales aprobadas.
-- No mostrar imágenes sin permiso de uso ni datos personales incrustados en metadatos.
-- Mostrar `alt` descriptivo y `placeholder` ante imágenes no disponibles.
-- Una eventual carga dinámica necesitará validación real de tipo y tamaño de archivo, límites de carga, revisión de contenido, nombres seguros y almacenamiento externo; **no se considera implementada en Fase 1**.
+Para crear los usuarios en una base limpia:
 
-**Evolución productiva:** utilizar almacenamiento de objetos y CDN (por ejemplo, S3, Cloudflare R2 o equivalente), conservando URL y metadatos en `ImagenesProducto`. La elección definitiva de proveedor queda fuera del alcance del demo.
+1. Desde `apps/api`, ejecutar `node scripts/generate-demo-hashes.mjs` y proporcionar **tres contraseñas locales distintas**, de al menos 12 caracteres. El script genera hashes bcrypt de costo 12. **La entrada puede visualizarse en la terminal**: usar un entorno seguro.
 
-## 8. Pruebas y evidencia
+2. Copiar `database/seeds/002_DemoUsers.sql` a un archivo temporal **fuera del repositorio**.
 
-Los scripts de `database/tests/` cubren restricciones, inventario, concurrencia, carrito, reservas, checkout, pedidos, cupones, reportes, auditoría, seguridad y migraciones recientes.
+3. Sustituir en la copia los marcadores `REEMPLAZAR_HASH_ADMIN`, `REEMPLAZAR_HASH_OPERADOR` y `REEMPLAZAR_HASH_CLIENTE` por los tres hashes generados.
 
-Pruebas especialmente relevantes para el cierre de Fase 1:
+4. Ejecutar la copia en SSMS con permisos de instalación y eliminarla después de confirmar la creación.
 
-| Script | Cobertura |
-|---|---|
-| `035_CustomerAddressesTests.sql` | Direcciones por cliente |
-| `036_CustomerOrderHistoryTests.sql` | Historial de pedidos y pertenencia |
-| `037_InventoryApiTests.sql` | Stock y movimientos de inventario |
-| `038_DiscountedOrderReturnsTests.sql` | Reembolsos proporcionales con descuentos, idempotencia, inventario y `ROLLBACK` |
-| `039_CategoryScopedCouponsTests.sql` | Descuento solo en categoría elegible, devolución de líneas elegibles y no elegibles, `ROLLBACK` |
+5. Verificar el inicio de sesión de cada cuenta desde `/login`.
 
-Los tests `038` y `039` se ejecutaron durante el desarrollo con resultado positivo comunicado. **No se afirma que toda la batería haya sido ejecutada en una instalación limpia o en un entorno de CI.** Algunos tests requieren precondiciones específicas o sesiones paralelas.
+El seed no cambia la contraseña de cuentas ya existentes. Si esos correos ya existen, utilizar las contraseñas creadas previamente o preparar una nueva base de demostración.
 
-Para verificar la compilación del backend:
+## 5. Funcionalidades según RF-01 a RF-09
+
+| RF | Implementación disponible |
+| --- | --- |
+| **RF-01. Identidad y roles** | Registro de clientes, login, JWT, refresh tokens con rotación, sesiones y permisos de Cliente, Operador y Administrador; administración de usuarios |
+| **RF-02. Catálogo** | CRUD funcional de categorías y productos con desactivación lógica; listado público con filtros; administración de productos activos/inactivos; reactivación; variantes con SKU, atributos, precio y existencia individual; administración de estado y cambio de precio con historial |
+| **RF-03. Inventario** | Consulta de existencias, reservas y movimientos de kardex; ajustes con motivo y controles de integridad |
+| **RF-04. Carrito** | Agregar, actualizar, consultar y eliminar artículos; validación de existencias |
+| **RF-05. Promociones** | Administración de cupones porcentuales o fijos con vigencia, mínimos y límites; cupón general o por categoría y cotización previa al checkout |
+| **RF-06. Checkout** | Dirección de entrega, reserva temporal, confirmación transaccional, precios/descuentos históricos e idempotencia; **pago simulado** |
+| **RF-07. Pedidos** | Historial del cliente, estados de procesamiento, cancelaciones permitidas, devoluciones parciales/totales y reintegro por kardex |
+| **RF-08. Reportes** | Panel con gráficas, ventas por periodo, categorías, top de productos y listado administrativo de pedidos |
+| **RF-09. Bitácora** | Auditoría de operaciones relevantes, filtros administrativos, valores anteriores/nuevos y protección contra modificación |
+
+El frontend ofrece rutas por rol y estados de carga, vacío y error. Las capacidades anteriores describen lo implementado; **no implican una certificación de carga ni de seguridad productiva**.
+
+### Rutas del frontend
+
+| Rol | Ruta | Vista |
+| --- | --- | --- |
+| Público | `/`, `/login`, `/registro` | Catálogo, ingreso y registro |
+| Cliente | `/carrito`, `/checkout`, `/mis-pedidos` | Compra e historial |
+| Operador | `/operacion/pedidos`, `/operacion/inventario` | Pedidos y kardex |
+| Administrador | `/administracion/productos` | Productos y variantes |
+| Administrador | `/administracion/categorias`, `/administracion/cupones` | Catálogo y promociones |
+| Administrador | `/administracion/usuarios` | Gestión de usuarios |
+| Administrador | `/administracion/dashboard`, `/administracion/auditoria` | Indicadores y bitácora |
+
+### Endpoints API principales
+
+| Método | Ruta | Acceso |
+| --- | --- | --- |
+| GET | `/api/catalog/products`, `/api/catalog/categories` | Público |
+| POST | `/api/auth/register`, `/api/auth/login`, `/api/auth/refresh` | Según operación |
+| GET | `/api/admin/products` | Administrador |
+| PATCH | `/api/admin/products/:id/reactivate` | Administrador |
+| GET / POST | `/api/admin/variants` | Administrador |
+| PATCH | `/api/admin/variants/:id/status` | Administrador |
+| PATCH | `/api/catalog/variants/:id/price` | Administrador |
+| POST | `/api/cart`, `/api/checkout/reservations`, `/api/checkout/quote`, `/api/checkout/confirm` | Cliente |
+| GET | `/api/orders/my`, `/api/orders/my/:id` | Cliente propietario |
+| PATCH / POST | `/api/orders/:id/status`, `/api/orders/:id/cancel`, `/api/orders/:id/returns` | Según permisos y estado |
+| POST / GET | `/api/inventory/movements`, `/api/inventory/variants/:id` | Operador o Administrador |
+| GET | `/api/reports/sales`, `/api/reports/categories`, `/api/reports/top-products` | Administrador |
+| GET | `/api/audit`, `/api/admin/users` | Administrador |
+
+Los cuerpos JSON y filtros son validados con Zod; los detalles concretos se encuentran en `apps/api/src/modules/*/*.schema.ts`. Las operaciones sensibles vuelven a comprobar la autorización dentro de SQL Server.
+
+## 6. Decisiones de diseño y reglas de negocio
+
+### 6.1 Concurrencia y existencias
+
+La **existencia disponible** se calcula a partir de la existencia física y las unidades reservadas que no han vencido. Las transacciones de reserva/confirmación y los cambios de inventario utilizan bloqueos y restricciones para evitar sobreventa al competir por la última unidad. Los movimientos de entrada, venta, ajuste o devolución conservan historial de Kardex con motivo, responsable y saldos.
+
+**Trade-off:** los bloqueos protegen la integridad, pero pueden aumentar la espera cuando varias solicitudes modifican la misma variante.
+
+### 6.2 Idempotencia y pagos
+
+Las operaciones críticas de checkout utilizan una clave de idempotencia y comprobaciones de consistencia de solicitud. Los reintentos de una misma operación no deben duplicar pedidos o cobros simulados. Los pedidos congelan sus importes al confirmar para que los cambios posteriores de precio y cupón no alteren compras anteriores.
+
+**Importante:** no se integra una pasarela de pago real, ni se ejecutan cobros o devoluciones bancarias. Estos estados se simulan dentro del sistema.
+
+### 6.3 Variantes, precios y desactivación
+
+Cada variante es una unidad vendible con **SKU único**, precio, atributos opcionales (por ejemplo, color o talla) y existencias propias. Crear una variante inicializa su existencia en `0`: no se generan entradas ficticias de Kardex. Las existencias se modifican a través del módulo de inventario.
+
+Los cambios de precio se registran en un historial separado. Al desactivar un producto se desactivan sus variantes; la reactivación usa la auditoría para restaurar solo las variantes previamente activas, sin reponer arbitrariamente existencias.
+
+La activación de una variante requiere producto y categoría activos. El catálogo público excluye artículos que no cumplan las condiciones de publicación.
+
+### 6.4 Ciclo de pedidos
+
+El modelo conserva transiciones controladas desde pago, preparación y despacho hasta entrega, además de cancelación y devolución. Los criterios concretos están implementados en los procedimientos SQL y documentados en el diagrama:
+
+![Diagrama de estados del pedido](docs/diagrams/ShopCart_Ciclo_pedido.png)
+
+La cancelación está restringida a estados permitidos; las devoluciones operan por línea y cantidad, sin permitir reintegrar más de lo adquirido. Los descuentos históricos participan en el cálculo del reembolso simulado.
+
+### 6.5 Autorización y seguridad
+
+- Passwords almacenados con bcrypt; jamás se publican contraseñas de usuarios reales.
+
+- Access tokens JWT de corta vida y refresh tokens con rotación.
+
+- Permisos en rutas, controladores y, para operaciones sensibles, Stored Procedures.
+
+- Validación de pertenencia de carritos, pedidos y direcciones al cliente que solicita el recurso.
+
+- Consulta y operaciones SQL exclusivamente mediante Stored Procedures con parámetros tipados.
+
+- Headers de Helmet, CORS configurado y rate limiting en autenticación.
+
+- Variables de entorno locales no versionadas.
+
+- Auditoría de operaciones con registro de valores anteriores y nuevos, protegida contra alteración.
+
+### 6.6 Confirmaciones y notificaciones con SweetAlert2
+
+Se incorporó **SweetAlert2** en React para presentar confirmaciones antes de operaciones administrativas y comunicar sus resultados de forma clara y consistente. Se utiliza, por ejemplo, al crear o modificar productos, cambiar precios y activar o desactivar productos y variantes.
+
+**Implementación:** las funciones reutilizables `confirmAction`, `showSuccess` y `showError` se centralizan en `apps/web/src/lib/alerts.ts`. Los componentes solicitan confirmación **antes de invocar la API**; si el usuario cancela, no se envía la operación. Tras recibir la respuesta, se muestra un mensaje de éxito o un error comprensible. Esto evita duplicar configuraciones de alertas y estilos en cada pantalla.
+
+**Justificación técnica:**
+
+- **Prevención de acciones accidentales:** una confirmación explícita reduce errores al modificar precios o desactivar recursos.
+- **Experiencia uniforme:** diálogos y mensajes consistentes facilitan el uso de los paneles administrativos.
+- **Mantenibilidad:** la configuración de botones, tonos y textos comunes se concentra en un módulo compartido, en lugar de repetirse en distintos componentes.
+- **Retroalimentación clara:** el usuario distingue entre una acción cancelada, una operación confirmada y una solicitud que falló.
+
+**Trade-off y alcance:** SweetAlert2 agrega una dependencia al frontend y los diálogos modales pueden interrumpir el flujo; por ello se priorizan en acciones con impacto y no en cada interacción. **No constituye un control de seguridad ni reemplaza** las validaciones de Zod, la autorización por roles, las transacciones, la idempotencia o las reglas de los Stored Procedures. La decisión final de aceptar o rechazar una operación sigue estando en el backend y en SQL Server.
+
+## 7. Imágenes de productos
+
+La aplicación admite carga inicial de imágenes de producto y muestra miniaturas en el catálogo y la administración. SQL Server guarda los metadatos y la API sirve los archivos mediante `/api/images/products`.
+
+**Decisión para la entrega:** el reemplazo de imágenes con eliminación automática del archivo anterior **no está implementado**; es una mejora futura. No eliminar archivos manualmente si pueden tener referencias en la base de datos.
+
+Los archivos cargados en `apps/api/uploads/products/` se almacenan localmente. El repositorio conserva la estructura de la carpeta, pero **no garantiza incluir los archivos subidos durante las pruebas**. En un entorno limpio es posible que deban volver a cargarse imágenes para que aparezcan las miniaturas. En producción sería preferible almacenamiento persistente externo y copias de seguridad.
+
+## 8. Verificación y pruebas
+
+**Compilación de la API:**
 
 ```powershell
 cd apps/api
 npm run build
 ```
 
-La ejecución de las pruebas SQL debe realizarse en una **base de desarrollo**, no sobre datos productivos.
+**Compilación y análisis del frontend:**
 
-## 9. Documentación gráfica
+```powershell
+cd apps/web
+npm run build
+npm run lint
+```
 
-### Ciclo del pedido
+**Pruebas SQL:** los archivos de `database/tests/` contienen casos de integridad, concurrencia, movimientos de inventario, reservas, checkout, devoluciones, cupones y auditoría. Ejecutarlos solo en una **base de desarrollo**, siguiendo las precondiciones de cada script; algunos requieren múltiples sesiones de SSMS.
 
-![Ciclo de vida del pedido](docs/diagrams/ShopCart_Ciclo_pedido.png)
+**Pruebas manuales realizadas durante el desarrollo:** endpoints de autenticación, catálogo, cupones, cotización, carrito, checkout, usuarios, auditoría y variantes en Postman; pruebas de reintento y aislamiento; validaciones funcionales en el frontend. Se validó específicamente la creación de variantes, el listado con y sin atributos, su estado y las operaciones del panel administrativo.
 
-### Modelo entidad-relación general
+**Evidencia y límite:** estas verificaciones son manuales y basadas en el entorno de desarrollo. No se declara una suite CI completa, ni una reproducción limpia en otra máquina, ni pruebas de carga integrales superadas.
 
-![Modelo entidad-relación ShopCart](docs/diagrams/ShopCart_ER_General.png)
+## 9. Diagramas
 
-[Ver diagrama general](docs/diagrams/ShopCart_ER_General.png)
-
-### Diagramas por módulo
+- [Modelo entidad-relación general](docs/diagrams/ShopCart_ER_General.png)
 
 - [Seguridad y usuarios](docs/diagrams/ShopCart_ER_Seguridad.png)
+
 - [Catálogo e inventario](docs/diagrams/ShopCart_ER_CatalogoInventario.png)
+
 - [Carrito y checkout](docs/diagrams/ShopCart_ER_CarritoCheckout.png)
+
 - [Pedidos y promociones](docs/diagrams/ShopCart_ER_PedidosPromociones.png)
 
-**Nota:** los diagramas existentes reflejan la estructura documentada al elaborarlos; las migraciones posteriores `046`–`050` incorporan operaciones y columnas que pueden requerir una nueva exportación del diagrama.
+- [Ciclo del pedido](docs/diagrams/ShopCart_Ciclo_pedido.png)
 
-## 10. Limitaciones conocidas
+> Los diagramas documentan el modelo principal; las migraciones posteriores incorporan operaciones adicionales. Si un diagrama no refleja una modificación reciente, prevalece el esquema reproducido por los scripts versionados.
 
-- **Frontend:** todavía no existe una interfaz React integrada en el repositorio; corresponde a la Fase 2.
-- **Imágenes:** la tabla está implementada, pero falta exponer URL en la consulta del catálogo, añadir recursos WebP al frontend e implementar su visualización. La subida de imágenes desde un panel administrativo no está disponible.
-- **Carrito de invitado:** el esquema admite un token de invitado, pero la API actual del carrito requiere un cliente autenticado.
-- **Direcciones:** API actual de creación y consulta; no están expuestos endpoints completos de edición y eliminación de direcciones.
-- **Administración de usuarios:** el registro/autenticación están disponibles, pero la gestión administrativa de activación/desactivación requiere completar API y pruebas.
-- **Pagos:** son simulados; no hay pasarela ni reembolsos bancarios reales.
-- **Pruebas y despliegue:** falta certificar instalación limpia en una segunda instancia, ejecutar pruebas de regresión exhaustivas y establecer una suite automatizada de integración/CI.
-- **Cupones por categoría:** se soporta una categoría específica por cupón (o alcance general), no una selección arbitraria de varias categorías por cupón.
+## 10. Limitaciones conocidas y mejoras posteriores
 
-## 11. Plan de Fase 2 — React + TypeScript
+- **Pagos:** pasarela y devoluciones monetarias reales no integradas; el flujo es simulado.
 
-1. Crear la aplicación web y las rutas por rol (Cliente, Operador y Administrador).
-2. Integrar autenticación y manejo seguro de sesiones con la API.
-3. Construir catálogo responsive con búsqueda, filtros, imágenes, detalle de producto y estados de carga/error.
-4. Integrar carrito, direcciones, reserva y confirmación de compra.
-5. Mostrar historial del cliente, estados, cancelaciones y devoluciones.
-6. Implementar paneles administrativos para productos, categorías, cupones, inventario, pedidos, reportes y auditoría, conforme a los endpoints disponibles.
-7. Añadir pruebas de integración y casos negativos; verificar autorización y manejo de errores.
-8. Revisar accesibilidad, diseño adaptable, documentación de ejecución y entrega final.
+- **Carrito de invitado:** el flujo actual de API prioriza al cliente autenticado.
 
-**Principio de implementación:** la interfaz no modificará directamente SQL Server; consumirá la API existente. Las nuevas necesidades del frontend se incorporarán mediante endpoints y migraciones versionadas, conservando compatibilidad con los contratos actuales.
+- **Imágenes:** los archivos subidos localmente requieren persistencia/copia de seguridad externa para un despliegue productivo; reemplazo y limpieza automática de archivos quedan pendientes.
 
----
+- **Variantes:** creación con atributos, consulta, cambio de estado y precio disponibles; edición posterior de SKU o de atributos de variantes existentes no forma parte del alcance implementado.
 
-**Propósito:** demostración y evaluación técnica para el Tech Challenge 360. Antes de un uso productivo se requiere completar las limitaciones documentadas, realizar pruebas adicionales y configurar adecuadamente la infraestructura.
+- **Instalación:** validada principalmente en el ambiente de desarrollo; falta ensayo independiente en un equipo limpio.
+
+- **Calidad:** ampliar automatización de pruebas, CI, medición de rendimiento y pruebas de concurrencia/carga en entorno reproducible.
+
+- **Despliegue:** HTTPS, secretos, respaldos, almacenamiento persistente y monitoreo deben configurarse según la infraestructura de producción.
+
+**Alcance del proyecto:** aplicación de demostración y evaluación técnica. Una entrega funcional no debe interpretarse como certificación para procesar pagos reales o datos sensibles de producción.

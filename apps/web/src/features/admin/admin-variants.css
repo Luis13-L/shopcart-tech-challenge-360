@@ -1,0 +1,101 @@
+/* PASO 80C.3 - Panel de variantes */
+.admin-variants-panel {
+  border-color: #d8d1fb;
+}
+
+.admin-variants-heading,
+.admin-variants-toolbar,
+.admin-variants-form-actions,
+.admin-variants-create-toggle {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-variants-heading {
+  margin-bottom: 16px;
+}
+
+.admin-variants-heading h2 {
+  margin-bottom: 5px;
+}
+
+.admin-variants-heading .admin-product-note {
+  margin: 0;
+}
+
+.admin-variants-toolbar button,
+.admin-variants-create-toggle button,
+.admin-variants-form-actions button,
+.admin-variants-attribute-row button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-variants-create-toggle {
+  justify-content: flex-start;
+  margin: 18px 0;
+}
+
+.admin-variants-form {
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1px solid #ebe9f3;
+  border-radius: 12px;
+  background: #faf9ff;
+}
+
+.admin-variants-form h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+  color: #33364a;
+}
+
+.admin-variants-attribute-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.admin-variants-attribute-row > button {
+  min-height: 39px;
+}
+
+.admin-variants-form-actions {
+  justify-content: flex-start;
+}
+
+.admin-variants-attribute {
+  display: block;
+  margin-bottom: 5px;
+  white-space: nowrap;
+}
+
+.admin-variants-muted {
+  color: #8b8da0;
+}
+
+.admin-variants-warning {
+  padding: 12px 14px;
+  margin: 12px 0;
+  border-radius: 9px;
+  background: #f8f5ed;
+  color: #785b28;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 650px) {
+  .admin-variants-attribute-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-variants-attribute-row > button {
+    justify-self: start;
+  }
+}

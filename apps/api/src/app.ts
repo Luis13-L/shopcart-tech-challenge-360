@@ -21,6 +21,7 @@ import {  inventoryRouter } from "./modules/inventory/inventory.routes.js";
 import {  productImagesDir } from "./modules/catalog/catalog.image.storage.js";
 import {  adminUsersRouter } from "./modules/users/users.routes.js";
 import {  adminProductsRouter } from "./modules/catalog/catalog.admin.routes.js";
+import {  adminVariantsRouter } from "./modules/catalog/catalog.admin.variants.routes.js";
 
 export function createApp() {
   const app = express();
@@ -113,6 +114,9 @@ app.use("/api/catalog/products", catalogRouter);
   // Administracion de productos
   app.use("/api/admin/products", adminProductsRouter);
 
+  // Administracion de variantes
+  app.use("/api/admin/variants", adminVariantsRouter);
+
   // Rutas no encontradas
   app.use((_req, res) => {
     res.status(404).json({
@@ -134,13 +138,27 @@ app.use("/api/catalog/products", catalogRouter);
       return;
     }
 
-    console.error("Error interno:", error);
+    const parseError = error as {
+  type?: string;
+  status?: number;
+};
 
-    res.status(500).json({
-      status: 500,
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Error interno del servidor"
-    });
+if (parseError.type === "entity.parse.failed") {
+  res.status(400).json({
+    status: 400,
+    code: "INVALID_JSON",
+    message: "El cuerpo JSON de la solicitud es inválido"
+  });
+  return;
+}
+
+console.error("Error interno:", error);
+
+res.status(500).json({
+  status: 500,
+  code: "INTERNAL_SERVER_ERROR",
+  message: "Error interno del servidor"
+});
   };
 
   app.use(errorHandler);
