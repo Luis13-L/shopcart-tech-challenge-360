@@ -4,7 +4,6 @@ import {
   useState,
   type FormEvent
 } from "react";
-
 import {
   ArrowLeft,
   Package,
@@ -13,37 +12,37 @@ import {
   Tag,
   Power
 } from "lucide-react";
-
 import { Link } from "react-router";
-
 import {
-  getProducts,
-  formatGTQ,
-  type Product,
-  type CatalogResponse
+  formatGTQ
 } from "../../lib/catalog";
-
+import {
+  getAdminProducts,
+  type AdminProduct,
+  type AdminProductsResponse
+} from "./admin.products.list.api";
 import {
   confirmAction,
   showSuccess,
   showError
 } from "../../lib/alerts";
-
 import {
   getAdminCategories,
   type AdminCategory
 } from "./admin.categories.api";
-
 import {
   createAdminProduct,
   updateAdminProduct,
   deactivateAdminProduct,
   changeVariantPrice
 } from "./admin.products.api";
-
 import {
   AdminProductThumbnail
 } from "./AdminProductThumbnail";
+import {
+  reactivateAdminProduct
+} from "./admin.products.reactivate.api";
+type ProductStatusFilter = "all" | "active" | "inactive";
 
 interface EditForm {
   idProducto: number;
@@ -52,7 +51,6 @@ interface EditForm {
   cambiarDescripcion: boolean;
   descripcion: string;
 }
-
 interface PriceForm {
   idVariante: number;
   sku: string;
@@ -60,79 +58,58 @@ interface PriceForm {
   precioNuevo: string;
   motivo: string;
 }
-
 const validPrice = (value: string): boolean =>
   /^(?:0|[1-9]\d{0,8})(?:\.\d{1,2})?$/.test(value) &&
   Number(value) > 0;
-
 const errorMessage = (error: unknown): string =>
   error instanceof Error
     ? error.message
     : "Error inesperado";
-
 export function AdminProductsPage() {
   const [categories, setCategories] =
     useState<AdminCategory[]>([]);
-
   const [categoryError, setCategoryError] =
     useState<string | null>(null);
-
   const [catalog, setCatalog] =
-    useState<CatalogResponse | null>(null);
-
+    useState<AdminProductsResponse | null>(null);
   const [searchDraft, setSearchDraft] = useState("");
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] =
+    useState<ProductStatusFilter>("all");
   const [page, setPage] = useState(1);
   const [revision, setRevision] = useState(0);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] =
     useState<string | null>(null);
-
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
-
   const [categoryId, setCategoryId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
-
   const [editing, setEditing] =
     useState<EditForm | null>(null);
-
   const [priceEditing, setPriceEditing] =
     useState<PriceForm | null>(null);
-
-    const [image, setImage] =
+  const [image, setImage] =
     useState<File | null>(null);
-
-    const [imagePreview, setImagePreview] =
+  const [imagePreview, setImagePreview] =
     useState<string | null>(null);
-
-    const imageInputRef =
-    useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-    if (!image) {
-        setImagePreview(null);
-        return;
-    }
-
-    const url = URL.createObjectURL(image);
-    setImagePreview(url);
-
-    return () => {
-        URL.revokeObjectURL(url);
-    };
-    }, [image]);
-
-
-  // CARGAR CATEGORÍAS ADMINISTRATIVAS
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!image) {
+      setImagePreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(image);
+    setImagePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [image]);
+  // CARGAR CATEGORÍAS ADMINISTRATIVAS
+  useEffect(() => {
     const controller = new AbortController();
-
     getAdminCategories(controller.signal)
       .then(data => {
         if (!controller.signal.aborted) {
@@ -145,36 +122,36 @@ export function AdminProductsPage() {
           setCategoryError(errorMessage(cause));
         }
       });
-
     return () => controller.abort();
   }, [revision]);
-
-  // CATÁLOGO PAGINADO DEL SERVIDOR
-
+  // ==========================================
+  // LISTADO ADMINISTRATIVO (PRODUCTOS ACTIVOS E INACTIVOS)
+  // ==========================================
   useEffect(() => {
     const controller = new AbortController();
-
     setLoading(true);
     setError(null);
+    setCatalog(null);
 
-    getProducts({
-      search,
-      categoryId: null,
-      minPrice: "",
-      maxPrice: "",
-      available: false,
-      sort: "name_asc",
-      page,
-      pageSize: 10
-    }, controller.signal)
+    getAdminProducts(
+      {
+        pagina: page,
+        tamanoPagina: 10,
+        busqueda: search,
+        activo: statusFilter === "all"
+          ? null
+          : statusFilter === "active"
+      },
+      controller.signal
+    )
       .then(data => {
         if (controller.signal.aborted) return;
 
         if (
-          data.pagination.totalPages > 0 &&
-          page > data.pagination.totalPages
+          page > 1 &&
+          page > data.pagination.totalPaginas
         ) {
-          setPage(data.pagination.totalPages);
+          setPage(Math.max(1, data.pagination.totalPaginas));
           return;
         }
 
@@ -182,6 +159,7 @@ export function AdminProductsPage() {
       })
       .catch((cause: unknown) => {
         if (!controller.signal.aborted) {
+          setCatalog(null);
           setError(errorMessage(cause));
         }
       })
@@ -192,10 +170,9 @@ export function AdminProductsPage() {
       });
 
     return () => controller.abort();
-  }, [search, page, revision]);
+  }, [page, search, statusFilter, revision]);
 
   // OPERACIONES CONFIRMADAS
-
   async function execute(
     title: string,
     text: string,
@@ -204,10 +181,8 @@ export function AdminProductsPage() {
     danger = false
   ): Promise<boolean> {
     if (busyRef.current) return false;
-
     busyRef.current = true;
     setBusy(true);
-
     try {
       const confirmed = await confirmAction({
         title,
@@ -215,50 +190,37 @@ export function AdminProductsPage() {
         confirmText: "Sí, continuar",
         danger
       });
-
       if (!confirmed) return false;
-
       await operation();
-
       setRevision(value => value + 1);
-
       await showSuccess(
         "Operación completada",
         successText
       );
-
       return true;
-
     } catch (cause) {
       setRevision(value => value + 1);
-
       await showError(
         "No se pudo confirmar la operación",
         errorMessage(cause) +
         ". Actualiza el listado antes de reintentar " +
         "si hubo una interrupción de conexión."
       );
-
       return false;
-
     } finally {
       busyRef.current = false;
       setBusy(false);
     }
   }
-
   // CREAR PRODUCTO Y VARIANTE INICIAL
-
   async function handleCreate(
     event: FormEvent<HTMLFormElement>
   ): Promise<void> {
     event.preventDefault();
-
     const parsedCategory = Number(categoryId);
     const parsedName = name.trim();
     const parsedSku = sku.trim().toUpperCase();
     const parsedPrice = price.trim();
-
     if (
       !Number.isSafeInteger(parsedCategory) ||
       parsedCategory <= 0 ||
@@ -274,7 +236,6 @@ export function AdminProductsPage() {
       );
       return;
     }
-
     if (
       parsedName.length < 3 ||
       parsedName.length > 200 ||
@@ -288,33 +249,25 @@ export function AdminProductsPage() {
       );
       return;
     }
-    
     const selectedImage = image;
-
     if (!selectedImage) {
-    await showError(
+      await showError(
         "Imagen requerida",
         "Selecciona una imagen del producto."
-    );
-    return;
+      );
+      return;
     }
-
     if (
-    ![
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-    ].includes(selectedImage.type) ||
-    selectedImage.size > 3 * 1024 * 1024
+      !["image/jpeg", "image/png", "image/webp"].includes(selectedImage.type) ||
+      selectedImage.size > 3 * 1024 * 1024
     ) {
-    await showError(
+      await showError(
         "Imagen inválida",
         "Selecciona una imagen JPG, PNG o WebP " +
-        "que no supere los 3 MB."
-    );
-    return;
+          "que no supere los 3 MB."
+      );
+      return;
     }
-
     const succeeded = await execute(
       "¿Crear producto?",
       `${parsedName} — SKU ${parsedSku}`,
@@ -328,41 +281,34 @@ export function AdminProductsPage() {
         }),
       "Producto y variante inicial registrados."
     );
-
     if (succeeded) {
       setName("");
       setDescription("");
       setSku("");
       setPrice("");
       setImage(null);
-
-        if (imageInputRef.current) {
+      if (imageInputRef.current) {
         imageInputRef.current.value = "";
-        }
+      }
     }
   }
-
-  function startEdit(product: Product): void {
+  function startEdit(product: AdminProduct): void {
     setPriceEditing(null);
     setEditing({
       idProducto: product.idProducto,
       nombre: product.nombreProducto,
       idCategoria: product.idCategoria,
       cambiarDescripcion: false,
-      descripcion: ""
+      descripcion: product.descripcion ?? ""
     });
   }
-
   // ACTUALIZAR DATOS DEL PRODUCTO
-
   async function handleUpdate(
     event: FormEvent<HTMLFormElement>
   ): Promise<void> {
     event.preventDefault();
     if (!editing) return;
-
     const nombre = editing.nombre.trim();
-
     if (
       nombre.length < 3 ||
       nombre.length > 200 ||
@@ -374,7 +320,6 @@ export function AdminProductsPage() {
       );
       return;
     }
-
     const succeeded = await execute(
       "¿Actualizar producto?",
       `Se modificarán los datos del producto #${editing.idProducto}.`,
@@ -393,21 +338,16 @@ export function AdminProductsPage() {
       ),
       "Los datos del producto fueron actualizados."
     );
-
     if (succeeded) setEditing(null);
   }
-
   // ACTUALIZAR PRECIO CON MOTIVO
-
   async function handlePrice(
     event: FormEvent<HTMLFormElement>
   ): Promise<void> {
     event.preventDefault();
     if (!priceEditing) return;
-
     const nuevo = priceEditing.precioNuevo.trim();
     const motivo = priceEditing.motivo.trim();
-
     if (
       !validPrice(nuevo) ||
       motivo.length < 3 ||
@@ -419,7 +359,6 @@ export function AdminProductsPage() {
       );
       return;
     }
-
     const succeeded = await execute(
       "¿Cambiar precio?",
       `${priceEditing.sku}: ` +
@@ -432,14 +371,11 @@ export function AdminProductsPage() {
       ),
       "Precio verificado y operación registrada."
     );
-
     if (succeeded) setPriceEditing(null);
   }
-
   // DESACTIVAR PRODUCTO
-
   async function handleDeactivate(
-    product: Product
+    product: AdminProduct
   ): Promise<void> {
     await execute(
       "¿Desactivar producto?",
@@ -450,6 +386,33 @@ export function AdminProductsPage() {
       true
     );
   }
+  // REACTIVAR PRODUCTO (PASO 80B.3)
+  async function handleReactivate(
+    product: AdminProduct
+  ): Promise<void> {
+    if (!product.categoriaActiva) {
+      await showError(
+        "Categoría inactiva",
+        "Activa la categoría antes de reactivar el producto."
+      );
+      return;
+    }
+
+    const succeeded = await execute(
+      "¿Reactivar producto?",
+      `${product.nombreProducto} volverá a estar disponible. ` +
+        "Solo se restaurarán las variantes que estaban activas " +
+        "antes de su desactivación.",
+      () => reactivateAdminProduct(product.idProducto),
+      "Estado del producto confirmado. Si estaba inactivo, " +
+        "ahora puedes encontrarlo en la pestaña Activos."
+    );
+
+    if (succeeded) {
+      setEditing(null);
+      setPriceEditing(null);
+    }
+  }
 
   function handleSearch(
     event: FormEvent<HTMLFormElement>
@@ -458,16 +421,20 @@ export function AdminProductsPage() {
     setPage(1);
     setSearch(searchDraft.trim());
   }
+  function handleStatusChange(status: ProductStatusFilter): void {
+    setStatusFilter(status);
+    setPage(1);
+    setEditing(null);
+    setPriceEditing(null);
+  }
 
-  const rows = catalog?.data ?? [];
+  const rows = catalog?.items ?? [];
   const pagination = catalog?.pagination;
   const activeCategories =
     categories.filter(category => category.activa);
-
   return (
     <main className="operator-page">
       <div className="operator-container">
-
         <Link
           to="/administracion"
           className="orders-back"
@@ -475,7 +442,6 @@ export function AdminProductsPage() {
           <ArrowLeft size={17} />
           Volver al administrador
         </Link>
-
         <header className="operator-heading">
           <div>
             <span className="eyebrow">
@@ -488,14 +454,11 @@ export function AdminProductsPage() {
           </div>
           <Package size={38} />
         </header>
-
         <section className="admin-product-card">
           <h2>Crear producto</h2>
-
           {categoryError && (
             <p role="alert">{categoryError}</p>
           )}
-
           <form
             className="admin-product-form"
             onSubmit={event => {
@@ -521,7 +484,6 @@ export function AdminProductsPage() {
                 ))}
               </select>
             </label>
-
             <label>
               Nombre
               <input
@@ -533,7 +495,6 @@ export function AdminProductsPage() {
                 disabled={busy}
               />
             </label>
-
             <label>
               SKU inicial
               <input
@@ -546,7 +507,6 @@ export function AdminProductsPage() {
                 disabled={busy}
               />
             </label>
-
             <label>
               Precio inicial (Q)
               <input
@@ -559,7 +519,6 @@ export function AdminProductsPage() {
                 disabled={busy}
               />
             </label>
-
             <label className="admin-product-wide">
               Descripción
               <textarea
@@ -570,11 +529,8 @@ export function AdminProductsPage() {
                 disabled={busy}
               />
             </label>
-
-            
             <label className="admin-product-wide">
             Imagen principal del producto
-
             <input
                 ref={imageInputRef}
                 type="file"
@@ -587,13 +543,11 @@ export function AdminProductsPage() {
                 );
                 }}
             />
-
             <small>
                 Formatos: JPG, PNG o WebP.
                 Tamaño máximo: 3 MB.
             </small>
             </label>
-
             {imagePreview && (
             <div className="admin-product-wide">
                 <img
@@ -603,8 +557,6 @@ export function AdminProductsPage() {
                 />
             </div>
             )}
-
-
             <button
               type="submit"
               className="operator-primary"
@@ -614,19 +566,57 @@ export function AdminProductsPage() {
             </button>
           </form>
         </section>
-
+        {/* LISTADO ADMINISTRATIVO */}
         <section className="admin-product-card">
           <div className="admin-product-toolbar">
-            <h2>Productos activos</h2>
-
+            <div>
+              <h2>Administración de productos</h2>
+              <p className="admin-product-note">
+                Consulta productos activos e inactivos y sus variantes de referencia.
+              </p>
+            </div>
             <button
               type="button"
               className="operator-refresh"
               disabled={busy || loading}
-              onClick={() => setRevision(v => v + 1)}
+              onClick={() => setRevision(value => value + 1)}
             >
               <RefreshCw size={16} />
               Actualizar
+            </button>
+          </div>
+
+          <div
+            className="admin-product-status-filter"
+            role="group"
+            aria-label="Filtrar productos por estado"
+          >
+            <button
+              type="button"
+              className={statusFilter === "all" ? "active" : ""}
+              aria-pressed={statusFilter === "all"}
+              disabled={busy}
+              onClick={() => handleStatusChange("all")}
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              className={statusFilter === "active" ? "active" : ""}
+              aria-pressed={statusFilter === "active"}
+              disabled={busy}
+              onClick={() => handleStatusChange("active")}
+            >
+              Activos
+            </button>
+            <button
+              type="button"
+              className={statusFilter === "inactive" ? "active" : ""}
+              aria-pressed={statusFilter === "inactive"}
+              disabled={busy}
+              onClick={() => handleStatusChange("inactive")}
+            >
+              Inactivos
             </button>
           </div>
 
@@ -637,11 +627,11 @@ export function AdminProductsPage() {
             <input
               type="search"
               maxLength={120}
-              placeholder="Buscar producto..."
+              placeholder="Buscar por nombre o SKU..."
               value={searchDraft}
-              onChange={e => setSearchDraft(e.target.value)}
+              disabled={busy}
+              onChange={event => setSearchDraft(event.target.value)}
             />
-
             <button
               type="submit"
               className="operator-primary"
@@ -651,106 +641,164 @@ export function AdminProductsPage() {
             </button>
           </form>
 
+          {!loading && !error && pagination && (
+            <p className="admin-product-note">
+              {pagination.totalRegistros} producto(s) encontrado(s).
+            </p>
+          )}
+
           {loading ? (
             <p role="status">Cargando productos...</p>
-
           ) : error ? (
             <p role="alert">{error}</p>
-
           ) : rows.length === 0 ? (
-            <p>No hay productos con ese filtro.</p>
-
+            <p className="admin-product-note">
+              No se encontraron productos con los filtros seleccionados.
+            </p>
           ) : (
             <div className="admin-product-table-scroll">
               <table className="admin-product-table">
                 <thead>
                   <tr>
-                    <th>Producto</th>
-                    <th>SKU / Variante</th>
-                    <th>Precio</th>
-                    <th>Existencia física</th>
-                    <th>Acciones</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">SKU / Variante</th>
+                    <th scope="col">Precio</th>
+                    <th scope="col">Existencia</th>
+                    <th scope="col">Acciones</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {rows.map(product => (
-                    <tr key={product.idVariante}>
-                      
+                    <tr key={product.idProducto}>
                       <td>
                         <div className="admin-product-identity">
                           <AdminProductThumbnail product={product} />
-
                           <div>
-                            <strong>
-                              {product.nombreProducto}
-                            </strong>
-
+                            <strong>{product.nombreProducto}</strong>
                             <small>
                               Producto #{product.idProducto}
                               {" · "}
                               {product.nombreCategoria}
+                            </small>
+                            <small>
+                              {product.totalVariantes} variante(s)
+                              {" · "}
+                              {product.variantesActivas} activa(s)
                             </small>
                           </div>
                         </div>
                       </td>
 
                       <td>
-                        {product.sku}
+                        <span
+                          className={
+                            product.activo
+                              ? "admin-product-status active"
+                              : "admin-product-status inactive"
+                          }
+                        >
+                          {product.activo ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
+
+                      <td>
+                        {product.skuReferencia ?? "Sin variante"}
                         <small>
-                          Variante #{product.idVariante}
+                          {product.idVarianteReferencia === null
+                            ? "Sin variante de referencia"
+                            : `Variante #${product.idVarianteReferencia}`}
                         </small>
                       </td>
 
                       <td>
-                        {formatGTQ(product.precioActual)}
+                        {product.precioReferencia === null
+                          ? "—"
+                          : formatGTQ(product.precioReferencia)}
                       </td>
 
-                      <td>{product.cantidadFisica}</td>
+                      <td>
+                        {product.idVarianteReferencia === null
+                          ? "—"
+                          : product.cantidadFisicaReferencia}
+                      </td>
 
                       <td>
-                        <div className="admin-product-actions">
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => startEdit(product)}
-                          >
-                            <Pencil size={15} />
-                            Editar
-                          </button>
+                        {product.activo ? (
+                          <div className="admin-product-actions">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => startEdit(product)}
+                            >
+                              <Pencil size={15} />
+                              Editar
+                            </button>
 
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => {
-                              setEditing(null);
-                              setPriceEditing({
-                                idVariante:
-                                  product.idVariante,
-                                sku: product.sku,
-                                precioAnterior:
-                                  product.precioActual,
-                                precioNuevo:
-                                  product.precioActual,
-                                motivo: ""
-                              });
-                            }}
-                          >
-                            <Tag size={15} />
-                            Precio
-                          </button>
+                            <button
+                              type="button"
+                              disabled={
+                                busy ||
+                                product.idVarianteReferencia === null ||
+                                product.skuReferencia === null ||
+                                product.precioReferencia === null ||
+                                product.varianteReferenciaActiva !== true
+                              }
+                              onClick={() => {
+                                if (
+                                  product.idVarianteReferencia === null ||
+                                  product.skuReferencia === null ||
+                                  product.precioReferencia === null ||
+                                  product.varianteReferenciaActiva !== true
+                                ) return;
 
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => {
-                              void handleDeactivate(product);
-                            }}
-                          >
-                            <Power size={15} />
-                            Desactivar
-                          </button>
-                        </div>
+                                setEditing(null);
+                                setPriceEditing({
+                                  idVariante: product.idVarianteReferencia,
+                                  sku: product.skuReferencia,
+                                  precioAnterior: product.precioReferencia,
+                                  precioNuevo: product.precioReferencia,
+                                  motivo: ""
+                                });
+                              }}
+                            >
+                              <Tag size={15} />
+                              Precio
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => void handleDeactivate(product)}
+                            >
+                              <Power size={15} />
+                              Desactivar
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="admin-product-actions">
+                            <button
+                              type="button"
+                              disabled={busy || !product.categoriaActiva}
+                              title={
+                                product.categoriaActiva
+                                  ? "Reactivar producto"
+                                  : "Activa primero la categoría"
+                              }
+                              onClick={() => {
+                                void handleReactivate(product);
+                              }}
+                            >
+                              <Power size={15} />
+                              Reactivar
+                            </button>
+                            {!product.categoriaActiva && (
+                              <span className="admin-product-inactive-note">
+                                Activa primero la categoría.
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -759,7 +807,7 @@ export function AdminProductsPage() {
             </div>
           )}
 
-          {pagination && pagination.totalPages > 1 && (
+          {pagination && pagination.totalPaginas > 1 && (
             <nav
               className="orders-pagination"
               aria-label="Paginación de productos"
@@ -767,33 +815,36 @@ export function AdminProductsPage() {
               <button
                 type="button"
                 disabled={page <= 1 || busy || loading}
-                onClick={() => setPage(p => p - 1)}
+                onClick={() => setPage(current => current - 1)}
               >
                 Anterior
               </button>
-
               <span>
-                Página {page} de {pagination.totalPages}
+                Página {page} de {pagination.totalPaginas}
               </span>
-
               <button
                 type="button"
                 disabled={
-                  page >= pagination.totalPages ||
-                  busy || loading
+                  page >= pagination.totalPaginas ||
+                  busy ||
+                  loading
                 }
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage(current => current + 1)}
               >
                 Siguiente
               </button>
             </nav>
           )}
+
+          <p className="admin-product-note">
+            El precio y la existencia mostrados corresponden a la variante de
+            referencia, no a todas las variantes del producto.
+          </p>
         </section>
 
         {editing && (
           <section className="admin-product-card">
             <h2>Editar producto #{editing.idProducto}</h2>
-
             <form
               className="admin-product-form"
               onSubmit={event => {
@@ -815,7 +866,6 @@ export function AdminProductsPage() {
                   }}
                 />
               </label>
-
               <label>
                 Categoría
                 <select
@@ -846,7 +896,6 @@ export function AdminProductsPage() {
                     ))}
                 </select>
               </label>
-
               <label className="admin-product-wide">
                 <input
                   type="checkbox"
@@ -864,7 +913,6 @@ export function AdminProductsPage() {
                 />
                 {" "}Cambiar descripción
               </label>
-
               {editing.cambiarDescripcion && (
                 <label className="admin-product-wide">
                   Nueva descripción
@@ -884,7 +932,6 @@ export function AdminProductsPage() {
                   />
                 </label>
               )}
-
               <button
                 type="submit"
                 className="operator-primary"
@@ -892,7 +939,6 @@ export function AdminProductsPage() {
               >
                 Guardar cambios
               </button>
-
               <button
                 type="button"
                 className="operator-refresh"
@@ -902,24 +948,19 @@ export function AdminProductsPage() {
                 Cancelar
               </button>
             </form>
-
             <p className="admin-product-note">
-              La API pública no devuelve la descripción
-              actual. Solo se reemplazará cuando actives
-              expresamente «Cambiar descripción».
+              La descripción actual viene del listado administrativo.
+              Solo se reemplazará cuando actives «Cambiar descripción».
             </p>
           </section>
         )}
-
         {priceEditing && (
           <section className="admin-product-card">
             <h2>Cambiar precio: {priceEditing.sku}</h2>
-
             <p>
               Precio actual:{" "}
               {formatGTQ(priceEditing.precioAnterior)}
             </p>
-
             <form
               className="admin-product-form"
               onSubmit={event => {
@@ -944,7 +985,6 @@ export function AdminProductsPage() {
                   }}
                 />
               </label>
-
               <label className="admin-product-wide">
                 Motivo del cambio
                 <textarea
@@ -964,7 +1004,6 @@ export function AdminProductsPage() {
                   }}
                 />
               </label>
-
               <button
                 type="submit"
                 className="operator-primary"
@@ -972,7 +1011,6 @@ export function AdminProductsPage() {
               >
                 Confirmar nuevo precio
               </button>
-
               <button
                 type="button"
                 className="operator-refresh"

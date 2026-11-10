@@ -5,12 +5,12 @@ import {
 
 import { Package } from "lucide-react";
 
-import type {
-  Product
-} from "../../lib/catalog";
-
 interface Props {
-  product: Product;
+  product: {
+    nombreProducto: string;
+    imagenUrl: string | null;
+    imagenAlt: string | null;
+  };
 }
 
 export function AdminProductThumbnail({

@@ -207,3 +207,107 @@
   color: #9295a3;
 }
 
+/* ==========================================
+   PASO 80A.3
+   FILTROS ADMINISTRATIVOS DE PRODUCTOS
+========================================== */
+
+.admin-product-status-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 20px;
+}
+
+.admin-product-status-filter button {
+  min-height: 39px;
+  padding: 9px 17px;
+  border: 1px solid #e3e0ed;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #616579;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-product-status-filter button:hover:not(:disabled) {
+  border-color: #b8adf2;
+  background: #f7f5ff;
+}
+
+.admin-product-status-filter button.active {
+  border-color: #7162ed;
+  background: #7162ed;
+  color: #ffffff;
+}
+
+.admin-product-status-filter button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   ESTADOS DE PRODUCTO
+========================================== */
+
+.admin-product-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-product-status.active {
+  background: #e8f7ef;
+  color: #278052;
+}
+
+.admin-product-status.inactive {
+  background: #f1f0f4;
+  color: #747887;
+}
+
+.admin-product-inactive-note {
+  display: inline-block;
+  max-width: 180px;
+  color: #85899b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   ACCESIBILIDAD
+========================================== */
+
+.admin-product-status-filter button:focus-visible {
+  outline: 2px solid #7162ed;
+  outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+  .admin-product-status-filter {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-product-status-filter button {
+    padding: 9px 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-product-status-filter button {
+    transition: none;
+  }
+}
+
